@@ -1,0 +1,26 @@
+{
+  "js/ts.experimental.useTsgo": true,
+  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "oxc.typeAware": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit",
+    "source.fixAll.stylelint": "explicit",
+    "source.sortPackageJson": "explicit",
+    "source.fixAll.markdownlint": "explicit",
+  },
+  "stylelint.validate": [
+    "css"
+  ],
+  "css.lint.emptyRules": "ignore",
+  "bun.test.enable": false,
+}
