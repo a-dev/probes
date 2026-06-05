@@ -1,0 +1,103 @@
+---
+import { Font } from "astro:assets";
+
+import "./overscroll.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <Font cssVariable="--font-dyna" preload />
+    <meta name="generator" content={Astro.generator} />
+    <title>Overscroll behavior</title>
+    <script>
+      function toggle2Colors() {
+        const has2Colors = window.document.documentElement.hasAttribute(
+          "data-overscroll-colors",
+        );
+        if (!has2Colors) {
+          window.document.documentElement.setAttribute(
+            "data-overscroll-colors",
+            "true",
+          );
+        } else {
+          window.document.documentElement.removeAttribute(
+            "data-overscroll-colors",
+          );
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const button = document.getElementById("2colors");
+        button?.addEventListener("click", () => toggle2Colors());
+      });
+    </script>
+  </head>
+  <body>
+    <div class="section light-part">
+      <h1>Overscroll</h1>
+      <p class="description">This is a light part of the page.</p>
+      <p class="description">
+        This page is meant to test the overscroll behavior of the browser. Try
+        scrolling past the top or bottom of the page to see the effect.
+      </p>
+      <button id="2colors" class="button">Click me</button>
+    </div>
+    <div class="section dark-part">
+      <p class="description">
+        This is a dark part of the page.<br />It should have a different
+        background color to make it easier to see the overscroll effect.
+      </p>
+    </div>
+  </body>
+</html>
+<style>
+  html {
+    font-family: var(--font-dyna), sans-serif;
+    --color-bg-light: #ffba08;
+    --color-bg-dark: #03071e;
+    --color-text-on-light: black;
+    --color-text-on-dark: white;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 150vh;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 6rem);
+    line-height: 1;
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-inline: clamp(1rem, 5vw, 3rem);
+    padding-block: clamp(2rem, 5vh, 3rem);
+    text-align: center;
+  }
+
+  .description {
+    font-size: 1.2rem;
+    max-width: 600px;
+    line-height: 1.7;
+  }
+
+  .light-part {
+    background: var(--color-bg-light);
+    color: var(--color-text-on-light);
+  }
+
+  .dark-part {
+    background: var(--color-bg-dark);
+    color: var(--color-text-on-dark);
+  }
+</style>
