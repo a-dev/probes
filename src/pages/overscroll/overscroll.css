@@ -1,15 +1,105 @@
-html[data-overscroll-colors] {
+/** Gradient background */
+
+body[data-overscroll-background] {
   background: var(--color-bg-dark);
-  overscroll-behavior-x: none;
 }
-html[data-overscroll-colors]:before {
+
+body[data-overscroll-background]::before {
   pointer-events: none;
   content: "";
+
   position: fixed;
   z-index: -1;
   inset: 0;
+
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(var(--color-bg-light) 0%, var(--color-bg-light) 50%, var(--color-bg-dark) 50%, var(--color-bg-dark) 100%);
+
+  background-image: linear-gradient(
+    var(--color-bg-light) 0%,
+    var(--color-bg-light) 50%,
+    var(--color-bg-dark) 50%,
+    var(--color-bg-dark) 100%
+  );
   background-repeat: no-repeat;
+}
+
+/** Fixed elements */
+
+body[data-overscroll-fixed] .section::after,
+body[data-overscroll-animation] .section::after {
+  content: "";
+
+  position: fixed;
+  z-index: -1;
+  left: 0;
+
+  width: 100dvw;
+  height: 50dvh;
+}
+
+body[data-overscroll-fixed] .light-part::after,
+body[data-overscroll-animation] .light-part::after {
+  top: 0;
+  background-color: var(--color-bg-light);
+}
+
+body[data-overscroll-fixed] .dark-part::after,
+body[data-overscroll-animation] .dark-part::after {
+  bottom: 0;
+  background-color: var(--color-bg-dark);
+}
+
+/** Fixed Elements + Scroll animation */
+
+body[data-overscroll-animation] .light-part::after,
+body[data-overscroll-animation] .dark-part::after {
+  will-change: transform;
+
+  transform-origin: top;
+
+  height: 100dvh;
+
+  animation: part-scroll;
+  animation-timing-function: linear;
+  animation-timeline: scroll();
+}
+
+body[data-overscroll-animation] .dark-part::after {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes part-scroll {
+  0% {
+    transform: scaleY(1);
+  }
+
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+/** Safari */
+html:has(body[data-overscroll-safari]) {
+  animation: scroll-background;
+  animation-timing-function: linear;
+  animation-timeline: scroll(root);
+}
+
+/** Universal overscroll (but Firefox displays only dark background) */
+body[data-overscroll-universal] {
+  background-color: var(--color-bg-dark);
+  animation: scroll-background;
+  animation-timing-function: linear;
+  animation-timeline: scroll(root);
+}
+
+@keyframes scroll-background {
+  from {
+    background-color: var(--color-bg-light);
+  }
+
+  to {
+    background-color: var(--color-bg-dark);
+  }
 }

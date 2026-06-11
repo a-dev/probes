@@ -1,66 +1,124 @@
 ---
 import { Font } from "astro:assets";
+import "@/shared/styles/reset.css";
 
 import "./overscroll.css";
+
+const VARIANTS = [
+  {
+    id: "default",
+    label: "Default",
+  },
+  {
+    id: "background",
+    label: "Gradient Background",
+  },
+  {
+    id: "fixed",
+    label: "Fixed Elements",
+  },
+  {
+    id: "animation",
+    label: "Elements + Animation",
+  },
+  {
+    id: "safari",
+    label: "Safari?",
+  },
+  {
+    id: "universal",
+    label: "Animation + Fallback 🚀",
+  },
+];
+
+const mode = Astro.url.searchParams.get("mode");
+const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
+    <link rel="icon" href={`${baseUrl}favicon.ico`} />
     <meta name="viewport" content="width=device-width" />
     <Font cssVariable="--font-dyna" preload />
     <meta name="generator" content={Astro.generator} />
-    <title>Overscroll behavior</title>
-    <script>
-      function toggle2Colors() {
-        const has2Colors = window.document.documentElement.hasAttribute(
-          "data-overscroll-colors",
-        );
-        if (!has2Colors) {
-          window.document.documentElement.setAttribute(
-            "data-overscroll-colors",
-            "true",
-          );
-        } else {
-          window.document.documentElement.removeAttribute(
-            "data-overscroll-colors",
-          );
-        }
-      }
-
+    <title>Overscroll Behavior: rubber banding | @a-dev</title>
+    <script define:vars={{ variants: VARIANTS }}>
       document.addEventListener("DOMContentLoaded", () => {
-        const button = document.getElementById("2colors");
-        button?.addEventListener("click", () => toggle2Colors());
+        const element = document.body;
+        const modeTabs = document.querySelectorAll(".mode-tab");
+
+        function setDataAttributeFromSearchParam() {
+          const url = new URL(window.location.href);
+          const mode = url.searchParams.get("mode") || "default";
+
+          if (mode !== "default") {
+            element.setAttribute(`data-overscroll-${mode}`, "true");
+          }
+
+          modeTabs.forEach((tab) => {
+            const tabMode = tab.id.split("mode-")[1];
+            const isActive = tabMode === mode;
+            tab.setAttribute("aria-pressed", isActive ? "true" : "false");
+          });
+        }
+
+        setDataAttributeFromSearchParam();
       });
     </script>
   </head>
   <body>
     <div class="section light-part">
+      <fieldset class="mode-tabs" aria-label="Overscroll mode">
+        {
+          VARIANTS.map((variant) => {
+            return (
+              <a
+                id={`mode-${variant.id}`}
+                href={`?mode=${variant.id}`}
+                class="mode-tab"
+                aria-pressed={mode === variant.id}
+                role="button"
+              >
+                {variant.label}
+              </a>
+            );
+          })
+        }
+      </fieldset>
       <h1>Overscroll</h1>
-      <p class="description">This is a light part of the page.</p>
+      <p class="description">This is a light section of the page.</p>
       <p class="description">
-        This page is meant to test the overscroll behavior of the browser. Try
+        This page is designed to test the browser's overscroll behavior. Try
         scrolling past the top or bottom of the page to see the effect.
       </p>
-      <button id="2colors" class="button">Click me</button>
     </div>
     <div class="section dark-part">
       <p class="description">
-        This is a dark part of the page.<br />It should have a different
-        background color to make it easier to see the overscroll effect.
+        This is a dark section of the page.<br />It has a different background
+        color to make the overscroll effect easier to see.
       </p>
+      <div class="links">
+        <a href="#" class="link"
+          >Read the article <span class="link-arrow">→</span></a
+        >
+        <a href="#" class="link"
+          >View the code <span class="link-arrow">→</span></a
+        >
+      </div>
     </div>
   </body>
 </html>
 <style>
   html {
     font-family: var(--font-dyna), sans-serif;
+    font-weight: 400;
     --color-bg-light: #ffba08;
     --color-bg-dark: #03071e;
     --color-text-on-light: black;
     --color-text-on-dark: white;
+    overscroll-behavior-x: none;
   }
   body {
     margin: 0;
@@ -68,27 +126,89 @@ import "./overscroll.css";
     min-height: 150vh;
     display: grid;
     grid-template-rows: 1fr 1fr;
+    overflow-x: clip;
   }
 
   h1 {
     font-size: clamp(2rem, 5vw, 6rem);
     line-height: 1;
+    letter-spacing: 0.05em;
+    font-weight: 700;
   }
 
   .section {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
-    padding-inline: clamp(1rem, 5vw, 3rem);
-    padding-block: clamp(2rem, 5vh, 3rem);
+    padding-inline: clamp(1rem, 4vw, 3rem);
+    padding-block: clamp(1rem, 3vh, 3rem);
     text-align: center;
+    gap: 1.5rem;
   }
 
   .description {
-    font-size: 1.2rem;
+    font-size: 1rem;
     max-width: 600px;
+    font-weight: 400;
     line-height: 1.7;
+  }
+
+  .mode-tabs {
+    border: none;
+    border-top: 2px solid currentColor;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    padding: 0.75em 0;
+    gap: 0.25rem 1rem;
+  }
+
+  .mode-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    background: transparent;
+    color: inherit;
+    text-decoration: none;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
+  }
+
+  .mode-tab[aria-pressed="true"] {
+    background: white;
+    color: var(--color-bg-dark);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 2.5rem;
+    padding-inline: 1.5rem;
+  }
+
+  .link {
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .link-arrow {
+    font-weight: 600;
+    transition: transform 0.3s;
+  }
+
+  @media (hover: hover) {
+    .link:hover .link-arrow {
+      transform: translateX(0.25rem);
+    }
   }
 
   .light-part {
