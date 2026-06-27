@@ -1,0 +1,34 @@
+---
+import "@/shared/styles/reset.css";
+
+import "./validation.css";
+import { LoginDemo } from "./_components/login-demo";
+
+const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
+    <link rel="icon" href={`${baseUrl}favicon.ico`} />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Choreography of validation | @a-dev</title>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-head">
+        <h1>Choreography of validation</h1>
+        <p class="page-intro">
+          Two login forms, one mock backend that rejects every credential after
+          ~800ms. Type an invalid email, tab away, then start fixing it and
+          watch when each form scolds you and when it forgives you. Push the
+          "Sign in" button, get a server error, then start fixing the email and
+          watch when each form clears the error.
+        </p>
+      </header>
+      <LoginDemo client:load />
+    </main>
+  </body>
+</html>
