@@ -16,11 +16,9 @@
     "source.fixAll.oxc": "explicit",
     "source.fixAll.stylelint": "explicit",
     "source.sortPackageJson": "explicit",
-    "source.fixAll.markdownlint": "explicit",
+    "source.fixAll.markdownlint": "explicit"
   },
-  "stylelint.validate": [
-    "css"
-  ],
+  "stylelint.validate": ["css"],
   "css.lint.emptyRules": "ignore",
-  "bun.test.enable": false,
+  "bun.test.enable": false
 }

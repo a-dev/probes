@@ -2,6 +2,7 @@
 import { defineConfig, fontProviders } from "astro/config";
 
 import react from "@astrojs/react";
+import process from "node:process";
 
 const githubPagesBase = "/probes";
 const githubPagesSite = `https://a-dev.github.io${githubPagesBase}`;
