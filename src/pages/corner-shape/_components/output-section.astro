@@ -11,14 +11,11 @@ import "./output-section.css";
 <section class="output-section" aria-labelledby="output-title">
   <div class="output-controls">
     <div>
-      <p class="eyebrow">Output</p>
-      <h2 id="output-title" class="section-title">
-        Fallback first, enhancement after
-      </h2>
+      <button id="copy-css" class="button copy-css-button" type="button"
+        >Copy CSS</button
+      >
+      <p id="copy-status" class="copy-status" aria-live="polite"></p>
     </div>
-    <button id="copy-css" class="button copy-css-button" type="button"
-      >Copy CSS</button
-    >
     <div class="output-options">
       <label class="selector-field">
         <span class="field-label">Selector</span>
@@ -35,7 +32,6 @@ import "./output-section.css";
         >
       </div>
     </div>
-    <p id="copy-status" class="copy-status" aria-live="polite"></p>
   </div>
   <pre id="css-output" class="css-output" tabindex="0"></pre>
 </section>

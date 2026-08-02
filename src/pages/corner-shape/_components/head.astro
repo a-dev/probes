@@ -8,14 +8,17 @@ import "./head.css";
     <h1 class="page-title">Corner-shape generator</h1>
   </div>
   <p class="page-intro">
-    Drag the sliders until the corners look right, copy the CSS with fallback.
-    Two tiers of fallback are available: the default one is a <code class="code"
-      >border-radius</code
-    > that removes the same amount of corner as the superellipse does, and the exact
-    one traces the real curve with <code class="code">clip-path</code>.
+    Adjust the sliders until you're happy with how the corners look, then copy
+    the CSS. Two fallback options: default{" "}
+    <code class="code code-no-wrap">border-radius</code> recomputed for equivalent
+    corner area (different numbers, same look), or exact <code
+      class="code code-no-wrap">clip-path</code
+    > curve tracing.
   </p>
   <details class="about">
-    <summary class="about-summary">In more detail →</summary>
+    <summary class="about-summary"
+      >In depth<span class="about-summary-arrow">→</span></summary
+    >
     <div class="about-content">
       <p class="about-paragraph">
         The{" "}
@@ -26,30 +29,33 @@ import "./head.css";
         > property specifies the curve applied within the corner region defined by{
           " "
         }
-        <code class="code">border-radius</code>. The value inside{" "}
-        <code class="code">superellipse()</code> acts as an exponent (k = 2<sup
-          >s</sup
-        >): <strong>0</strong> produces a straight bevel, <strong>1</strong> gives
-        you a regular circular curve, <strong>2</strong> matches Apple's iOS squircle,
-        and negative values make the corner curve inward rather than outward. The
-        scale runs out at both ends: below <strong>-3</strong> the spec's <em
+        <code class="code code-no-wrap">border-radius</code>. The value inside{
+          " "
+        }
+        <code class="code code-no-wrap">superellipse()</code> acts as an exponent
+        (k = 2<sup>s</sup>): <strong>0</strong> produces a straight bevel, <strong
+          >1</strong
+        > gives you a regular circular curve, <strong>2</strong> matches Apple's iOS
+        squircle, and negative values make the corner curve inward rather than outward.
+        The scale runs out at both ends: below <strong>-3</strong> the spec's <em
           >-infinity</em
-        > takes over as notch, above <strong>5</strong> its <em>infinity</em> takes
-        over as square. Every step doubles <strong>k</strong>, and the curve
-        flattens so fast toward straight lines that cranking the exponent higher
-        barely moves it (we're talking less than a pixel of difference).
+        > takes over as <code class="code">notch,</code> above <strong>5</strong
+        > its <em>infinity</em> takes over as <code class="code">square</code>.
+        Every step doubles <strong>k</strong>, and the curve flattens so fast
+        toward straight lines that cranking the exponent higher barely moves it
+        (we're talking less than a pixel of difference).
       </p>
       <p class="about-paragraph">
         If the newer syntax isn't supported, you can fall back in one of two
-        ways. By default you fall back to good old <code class="code"
-          >border-radius</code
+        ways. By default you fall back to good old <code
+          class="code code-no-wrap">border-radius</code
         >, which plays nicely with borders, outlines, and shadows, but it can
         only round corners outward (no concave curves). The <strong
           >exact fallback</strong
         >{" "}
-        uses <code class="code">clip-path</code> to trace the actual curve. It reproduces
-        the shape exactly, but then cuts off anything rendered outside it, including
-        your shadows and outlines.
+        uses <code class="code code-no-wrap">clip-path</code> to trace the actual
+        curve. It reproduces the shape exactly, but then cuts off anything rendered
+        outside it, including your shadows and outlines.
       </p>
       <p class="about-paragraph">
         For outward-curving corners, the generator calculates a <code

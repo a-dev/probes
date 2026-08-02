@@ -3,15 +3,8 @@ import "./baseline.css";
 ---
 
 <footer class="support-panel">
-  <div>
-    <p class="eyebrow">Browser support</p>
-    <h2 class="section-title">What the fallback costs you</h2>
-    <p class="support-panel-text">
-      No <code class="code">border-radius</code> value bends inward, so a scoop or
-      a notch has no rounded equivalent at all. The exact tier draws them properly,
-      but a clip path also cuts off box shadows, outlines, and any border sitting
-      outside it.
-    </p>
+  <div class="support-panel-content">
+    Browser support of&nbsp;<code class="code code-no-wrap">corner-shape</code>
   </div>
   <baseline-status class="baseline-status" featureId="corner-shape">
     Support data didn't load. Check the Web Platform Status dashboard.
@@ -20,4 +13,15 @@ import "./baseline.css";
 
 <script>
   import "baseline-status";
+
+  const el = document.querySelector("baseline-status");
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(".name { display: none !important; }");
+
+  if (el?.shadowRoot?.adoptedStyleSheets) {
+    el.shadowRoot.adoptedStyleSheets = [
+      ...el.shadowRoot.adoptedStyleSheets,
+      sheet,
+    ];
+  }
 </script>
