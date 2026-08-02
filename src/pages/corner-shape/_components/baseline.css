@@ -1,0 +1,29 @@
+.support-panel {
+  display: grid;
+  grid-template-columns: 1fr minmax(16rem, 1fr);
+  gap: 2rem;
+  align-items: center;
+
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-top: 1px solid var(--color-border);
+
+  background: var(--color-transparent);
+}
+
+.support-panel-text {
+  color: var(--color-secondary);
+}
+
+/* The widget ships its own card; the panel around it is already that card. */
+.baseline-status {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (width <= 48rem) {
+  .support-panel {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,127 @@
+/* State selectors intentionally follow the styles they override. */
+/* stylelint-disable no-descending-specificity */
+
+.stage {
+  position: sticky;
+  top: 1rem;
+
+  overflow: hidden;
+  grid-area: stage;
+
+  width: 100%;
+}
+
+.stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-block: 1rem;
+}
+
+.stage-actions {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: end;
+  margin-left: auto;
+}
+
+/* A chip whose checkbox stays visible, so its checked state has to read as "on" rather
+   than "selected" — a soft fill instead of the solid accent the other chips take. */
+.exact-toggle {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.exact-toggle:has(.exact-toggle-input:checked) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.preview-card {
+  /* Share of the frame's width the card takes: whichever side the ratio makes longer is
+     the one that fills the frame, so the card grows to the edges and never past them.
+     Sizing the box beats scaling it — a transform would shrink the radius and the text
+     along with it, and the radius is the thing being judged. */
+  --fill: calc(var(--size) * min(1, var(--ratio)));
+
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+
+  box-sizing: border-box;
+  aspect-ratio: var(--ratio);
+  inline-size: calc(100% * var(--fill));
+
+  /* Percentage padding resolves against the frame, not the card, so it goes through the
+     same share to end up a percentage of the card itself. */
+  padding: calc(var(--p) * var(--fill));
+  border-radius: var(--r-tl) var(--r-tr) var(--r-br) var(--r-bl);
+
+  font-size: var(--fs);
+  line-height: 1.35;
+  color: var(--color-card-text);
+  text-align: center;
+
+  background: linear-gradient(145deg, var(--color-card-start), var(--color-card-end));
+
+  corner-shape: var(--shape-tl) var(--shape-tr) var(--shape-br) var(--shape-bl);
+}
+
+.stage[data-preview="fallback"] .preview-card {
+  border-radius: var(--fb-r-tl) var(--fb-r-tr) var(--fb-r-br) var(--fb-r-bl);
+  clip-path: none;
+
+  corner-shape: round;
+}
+
+/* A clip path carries the whole outline, so the radius has to get out of its way. */
+.stage[data-preview="fallback"][data-exact="true"] .preview-card,
+:root[data-corner-shape="unsupported"]
+  .stage[data-preview="enhanced"][data-clip="path"]
+  .preview-card {
+  border-radius: 0;
+  clip-path: var(--preview-clip);
+}
+
+/* All-square needs no clip path and no radius either. All-round, the other case with no
+   clip path, falls through to the rule above it and keeps its border-radius. */
+:root[data-corner-shape="unsupported"]
+  .stage[data-preview="enhanced"][data-square="true"]
+  .preview-card {
+  border-radius: 0;
+}
+
+.preview-wrapper {
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+
+  padding: 0.75rem;
+
+  background:
+    radial-gradient(circle at center, var(--color-dot) 0.8px, var(--color-transparent) 0.6px) 0 0 /
+      0.5rem 0.5rem,
+    var(--color-transparent);
+}
+
+.value-readout {
+  overflow: hidden;
+  display: block;
+
+  padding-block: 1rem;
+
+  font-size: 1.2rem;
+  font-weight: 500;
+  white-space: pre;
+}
+
+@media (width <= 48rem) {
+  .stage {
+    position: static;
+  }
+}

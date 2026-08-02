@@ -1,0 +1,56 @@
+---
+import { CORNER_LABELS } from "../_lib/controls";
+
+import CornerFields from "./corner-fields.astro";
+import "./shape-settings.css";
+
+// The corners. Two sets of the same controls live in the markup at once and the mode
+// switch shows one of them — keeping both mounted means the form always serialises a
+// complete answer for whichever mode is active, so nothing has to be reconstructed when
+// you flip between them.
+---
+
+<section class="panel shape-settings" aria-labelledby="controls-title">
+  <div class="section-head">
+    <p class="eyebrow">Controls</p>
+    <h2 id="controls-title" class="section-title">Shape the card</h2>
+  </div>
+
+  <fieldset class="mode-control">
+    <legend class="field-label">Corner mode</legend>
+    <div class="chip-group">
+      <label class="chip"
+        ><input
+          class="chip-input"
+          type="radio"
+          name="mode"
+          value="all"
+          checked
+        /> All</label
+      >
+      <label class="chip"
+        ><input
+          class="chip-input"
+          type="radio"
+          name="mode"
+          value="individual"
+        /> Individual</label
+      >
+    </div>
+  </fieldset>
+
+  <div class="corner-controls all-controls">
+    <CornerFields target="all" />
+  </div>
+
+  <div class="corner-grid individual-controls">
+    {
+      CORNER_LABELS.map(({ id, label }) => (
+        <fieldset class="corner-group">
+          <legend class="field-label corner-group-legend">{label}</legend>
+          <CornerFields target={id} label={label} />
+        </fieldset>
+      ))
+    }
+  </div>
+</section>

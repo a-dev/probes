@@ -1,0 +1,26 @@
+---
+import CardProperties from "./card-properties.astro";
+import OutputSection from "./output-section.astro";
+import ShapeSettings from "./shape-settings.astro";
+import Stage from "./stage.astro";
+import "./generator.css";
+
+// One form holds the whole tool: the preview, every control, and the CSS it emits. That
+// is deliberate — `_lib/generator.ts` never reads a control directly, it serialises this
+// form on every input event and renders from the result, so the DOM stays the single
+// source of truth and there is no second copy of the state to drift.
+---
+
+<form id="generator-form" class="generator-form" data-mode="all">
+  <div class="workbench">
+    <CardProperties />
+    <Stage />
+    <ShapeSettings />
+  </div>
+
+  <OutputSection />
+</form>
+
+<script>
+  import "../_lib/generator";
+</script>

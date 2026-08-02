@@ -1,0 +1,38 @@
+---
+import { DIMENSIONS } from "../_lib/controls";
+
+import SliderField from "./slider-field.astro";
+import "./card-properties.css";
+
+// Everything about the card that is not a corner. It is folded away by default because
+// the defaults are already a fair test — you only open it when the shape you are judging
+// needs a different box to be fair to it.
+---
+
+<details class="panel card-properties">
+  <summary class="card-properties-summary">Card size and text</summary>
+  <div class="card-properties-content">
+    <label class="field">
+      <span class="field-label">Preview text</span>
+      <textarea class="text-input" name="text" rows="3"
+        >A little corner of the web.</textarea
+      >
+    </label>
+
+    <div class="dimension-grid">
+      {
+        DIMENSIONS.map((dimension) => (
+          <SliderField
+            name={dimension.name}
+            label={dimension.label}
+            min={dimension.min}
+            max={dimension.max}
+            step={dimension.step}
+            value={dimension.value}
+            unit={dimension.unit}
+          />
+        ))
+      }
+    </div>
+  </div>
+</details>

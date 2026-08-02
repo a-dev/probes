@@ -20,6 +20,20 @@ export default defineConfig({
       weights: ["400 700"],
       styles: ["normal"],
     },
+    {
+      provider: fontProviders.google(),
+      name: "Atkinson Hyperlegible Next",
+      cssVariable: "--font-atkinson",
+      weights: ["200 800"],
+      styles: ["normal"],
+    },
+    {
+      provider: fontProviders.google(),
+      name: "Atkinson Hyperlegible Mono",
+      cssVariable: "--font-atkinson-mono",
+      weights: ["200 800"],
+      styles: ["normal"],
+    },
   ],
 
   integrations: [react()],

@@ -1,0 +1,61 @@
+---
+import "./stage.css";
+
+// The card itself, plus the two switches that decide which tier draws it. Nothing here
+// is a preview of a screenshot: the enhanced card is the real `corner-shape` declaration
+// and the fallback card is the real generated CSS, so flipping between them shows exactly
+// what a browser without support would lose. `_lib/generator.ts` drives the whole thing
+// through `data-` attributes on the section and custom properties on the root.
+---
+
+<section
+  id="stage"
+  class="stage"
+  data-preview="enhanced"
+  aria-labelledby="preview-title"
+>
+  <div class="stage-head">
+    <div>
+      <p class="eyebrow">Preview</p>
+      <h2 id="preview-title" class="section-title">
+        Flip between the two, same box
+      </h2>
+    </div>
+    <div class="stage-actions">
+      <fieldset class="chip-group" aria-label="Preview rendering">
+        <label class="chip"
+          ><input
+            class="chip-input"
+            type="radio"
+            name="preview"
+            value="enhanced"
+            checked
+          /> Enhanced</label
+        >
+        <label class="chip"
+          ><input
+            class="chip-input"
+            type="radio"
+            name="preview"
+            value="fallback"
+          /> Fallback</label
+        >
+      </fieldset>
+      <label class="chip exact-toggle">
+        <input
+          class="exact-toggle-input"
+          type="checkbox"
+          name="exact"
+          role="switch"
+        /> Exact fallback
+      </label>
+    </div>
+  </div>
+  <figure aria-hidden="true" class="preview-wrapper">
+    <div id="preview-card" class="preview-card">A little corner of the web.</div>
+  </figure>
+  <output id="value-readout" class="value-readout" aria-hidden="true"
+    ><code class="code">border-radius: 1rem;<br />corner-shape: squircle;</code
+    ></output
+  >
+</section>

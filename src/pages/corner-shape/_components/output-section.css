@@ -1,0 +1,99 @@
+.output-section {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.35fr) minmax(0, 1fr);
+  margin-top: 1rem;
+}
+
+.output-controls {
+  padding: 1rem;
+  border-right: 1px solid var(--color-divider);
+}
+
+.output-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.selector-field {
+  display: grid;
+  flex-grow: 1;
+  gap: 0.25rem;
+}
+
+.unit-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.copy-css-button {
+  width: 100%;
+}
+
+.copy-status {
+  min-height: 1.5rem;
+  padding-top: 0.35rem;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.css-output {
+  overflow: auto;
+
+  min-height: 12rem;
+  max-height: 32rem;
+  padding: 1.25rem;
+
+  font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--color-text);
+  tab-size: 2;
+
+  background: var(--color-transparent);
+}
+
+/* Speed-highlight's own class names, mapped onto the page palette. */
+.css-output .shj-numbers {
+  display: none;
+}
+
+.css-output .shj-syn-cmnt {
+  font-style: italic;
+  color: var(--color-syntax-comment);
+}
+
+.css-output .shj-syn-kwd,
+.css-output .shj-syn-oper {
+  color: var(--color-syntax-keyword);
+}
+
+.css-output .shj-syn-num,
+.css-output .shj-syn-class {
+  color: var(--color-syntax-number);
+}
+
+.css-output .shj-syn-str,
+.css-output .shj-syn-insert {
+  color: var(--color-syntax-string);
+}
+
+.css-output .shj-syn-func,
+.css-output .shj-syn-var,
+.css-output .shj-syn-type {
+  color: var(--color-syntax-function);
+}
+
+@media (width <= 48rem) {
+  .output-section {
+    grid-template-columns: 1fr;
+  }
+
+  .output-controls {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-divider);
+  }
+}

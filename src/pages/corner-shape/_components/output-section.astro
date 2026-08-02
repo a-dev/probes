@@ -1,0 +1,41 @@
+---
+import "./output-section.css";
+
+// The take-away. The order is the point: the fallback declaration comes first so every
+// browser gets something, and the `@supports` block that follows only reaches browsers
+// that can honour the real shape. `_lib/emit.ts` builds the text, this is the frame
+// around it plus the two things you might want to change about it — the selector it is
+// written for and the unit its lengths are in.
+---
+
+<section class="output-section" aria-labelledby="output-title">
+  <div class="output-controls">
+    <div>
+      <p class="eyebrow">Output</p>
+      <h2 id="output-title" class="section-title">
+        Fallback first, enhancement after
+      </h2>
+    </div>
+    <button id="copy-css" class="button copy-css-button" type="button"
+      >Copy CSS</button
+    >
+    <div class="output-options">
+      <label class="selector-field">
+        <span class="field-label">Selector</span>
+        <input class="text-input" name="selector" type="text" value=".card" />
+      </label>
+      <div class="unit-field">
+        <div class="field-label">Unit</div>
+        <input id="unit" type="hidden" name="unit" value="rem" />
+        <button
+          id="toggle-unit"
+          class="button button-ghost"
+          type="button"
+          aria-label="Unit: rem. Switch to px">rem</button
+        >
+      </div>
+    </div>
+    <p id="copy-status" class="copy-status" aria-live="polite"></p>
+  </div>
+  <pre id="css-output" class="css-output" tabindex="0"></pre>
+</section>

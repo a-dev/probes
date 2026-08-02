@@ -1,0 +1,76 @@
+---
+import {
+  DEFAULT_FALLBACK_RADIUS,
+  DEFAULT_RADIUS,
+  DEFAULT_SHAPE,
+  RADIUS_RANGE,
+  SHAPE_RANGE,
+} from "../_lib/controls";
+
+import PresetChips from "./preset-chips.astro";
+import SliderField from "./slider-field.astro";
+
+// The four fields that describe one corner: a preset, the exponent behind it, the radius
+// it bends through, and the plain radius a browser without `corner-shape` gets instead.
+// Identical whether it drives all four corners at once (`all`) or a single one, so the
+// only thing that changes is the field-name suffix and how the labels read aloud.
+interface Props {
+  /** `all`, or one of `tl` / `tr` / `br` / `bl`. */
+  target: string;
+  /** Spoken name of the corner, e.g. "Top left". Unused when target is `all`. */
+  label?: string;
+}
+
+const { target, label = "" } = Astro.props;
+
+const isAll = target === "all";
+const shapeLabel = isAll ? "Shape" : `${label} shape`;
+const radiusLabel = isAll ? "Radius" : `${label} radius`;
+---
+
+<PresetChips
+  name={`preset-${target}`}
+  target={`shape-${target}`}
+  legend={isAll ? "Shape presets" : "Shape preset"}
+  class={isAll ? undefined : "compact-presets"}
+/>
+
+<SliderField
+  name={`shape-${target}`}
+  label={shapeLabel}
+  min={SHAPE_RANGE.min}
+  max={SHAPE_RANGE.max}
+  step={SHAPE_RANGE.step}
+  value={DEFAULT_SHAPE}
+  type="text"
+  ariaValueText="squircle"
+  class="shape-control"
+>
+  Shape <i>s</i>
+</SliderField>
+
+<SliderField
+  name={`radius-${target}`}
+  label={radiusLabel}
+  min={RADIUS_RANGE.min}
+  max={RADIUS_RANGE.max}
+  step={RADIUS_RANGE.step}
+  value={DEFAULT_RADIUS}
+  unit="rem"
+>
+  Radius
+</SliderField>
+
+<label class="field fallback-field">
+  <span class="field-label"
+    >Fallback radius {isAll && <small class="field-hint">auto, editable</small>}</span
+  >
+  <input
+    class="text-input"
+    name={`fb-${target}`}
+    type="number"
+    min="0"
+    step="0.001"
+    value={DEFAULT_FALLBACK_RADIUS}
+  />
+</label>

@@ -21,6 +21,7 @@ Node `>=22.12.0`.
 - `<name>.css` — page styles, imported into the `.astro` file
 - `_article.md` — the explainer (`_` prefix keeps it out of routing)
 - `_components/` — React island(s) + logic, only if interactive
+- `_lib/` — framework-free logic for probes that do not need a React island
 
 `src/pages/index.astro` is an intentionally empty landing page; the probe list lives in `README.md`.
 

@@ -1,0 +1,63 @@
+---
+// One number, three inputs. The hidden input is the only one the form serialises; the
+// range is the fast way to reach a value and the text box the precise one, and
+// `_lib/generator.ts` keeps the pair mirrored through `data-bind`.
+interface Props {
+  /** Form field name, also the `data-bind` key the two visible inputs sync through. */
+  name: string;
+  /** Spoken name of the control, used to build both aria labels. */
+  label: string;
+  min: number | string;
+  max: number | string;
+  step: number | string;
+  value: number | string;
+  /** Appended to the value input's aria label, e.g. "rem". */
+  unit?: string;
+  /** `text` accepts `infinity`, which a number input would reject. */
+  type?: "number" | "text";
+  ariaValueText?: string;
+  class?: string;
+}
+
+const {
+  name,
+  label,
+  min,
+  max,
+  step,
+  value,
+  unit,
+  type = "number",
+  ariaValueText,
+  class: className,
+} = Astro.props;
+
+const isText = type === "text";
+---
+
+<fieldset class:list={["control-pair", className]}>
+  <legend class="field-label"><slot>{label}</slot></legend>
+  <input type="hidden" name={name} value={value} data-value-for={name} />
+  <input
+    class="range-input"
+    type="range"
+    min={min}
+    max={max}
+    step={step}
+    value={value}
+    data-bind={name}
+    aria-label={`${label} slider`}
+    aria-valuetext={ariaValueText}
+  />
+  <input
+    class="text-input"
+    type={type}
+    inputmode={isText ? "decimal" : undefined}
+    min={isText ? undefined : min}
+    max={isText ? undefined : max}
+    step={isText ? undefined : step}
+    value={value}
+    data-bind={name}
+    aria-label={unit ? `${label} value, ${unit}` : `${label} value`}
+  />
+</fieldset>

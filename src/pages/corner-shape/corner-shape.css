@@ -1,0 +1,307 @@
+/* State selectors intentionally follow their shared control styles. */
+/* stylelint-disable no-descending-specificity */
+@layer reset, ui;
+
+@import url("../../shared/styles/reset.css") layer(reset);
+
+/* palette, DO NOT CHANGE PALETTE COLORS */
+
+/* https://coolors.co/f2bc43-eadbce-2a593e-4a90e2-d67a81 */
+:root {
+  --color-sunflower-gold-20: oklch(99.8% 0.008 84.44deg);
+  --color-sunflower-gold-50: oklch(97.45% 0.021 85.94deg);
+  --color-sunflower-gold-100: oklch(95.23% 0.043 86.59deg);
+  --color-sunflower-gold-200: oklch(90.38% 0.083 85.72deg);
+  --color-sunflower-gold-300: oklch(86.02% 0.12 85.04deg);
+  --color-sunflower-gold-400: oklch(81.94% 0.147 82.91deg);
+  --color-sunflower-gold-500: oklch(77.88% 0.16 78.05deg);
+  --color-sunflower-gold-600: oklch(66.22% 0.135 78.6deg);
+  --color-sunflower-gold-700: oklch(53.69% 0.108 79.13deg);
+  --color-sunflower-gold-800: oklch(40.37% 0.08 80.06deg);
+  --color-sunflower-gold-900: oklch(26.21% 0.05 83.69deg);
+  --color-sunflower-gold-950: oklch(21.45% 0.04 88.06deg);
+  --color-almond-cream-50: oklch(96.36% 0.009 67.72deg);
+  --color-almond-cream-100: oklch(92.79% 0.018 64.92deg);
+  --color-almond-cream-200: oklch(85.44% 0.035 64.5deg);
+  --color-almond-cream-300: oklch(77.9% 0.054 62.21deg);
+  --color-almond-cream-400: oklch(70.53% 0.074 61.99deg);
+  --color-almond-cream-500: oklch(63.21% 0.093 60.44deg);
+  --color-almond-cream-600: oklch(53.75% 0.078 60.81deg);
+  --color-almond-cream-700: oklch(43.87% 0.061 60.52deg);
+  --color-almond-cream-800: oklch(33.64% 0.043 62.67deg);
+  --color-almond-cream-900: oklch(22.41% 0.025 63.25deg);
+  --color-almond-cream-950: oklch(18.6% 0.018 58.26deg);
+  --color-hunter-green-50: oklch(96.8% 0.012 162.05deg);
+  --color-hunter-green-100: oklch(93.5% 0.025 160.58deg);
+  --color-hunter-green-200: oklch(86.9% 0.047 160.95deg);
+  --color-hunter-green-300: oklch(80.46% 0.072 159.56deg);
+  --color-hunter-green-400: oklch(74.13% 0.097 158.06deg);
+  --color-hunter-green-500: oklch(67.77% 0.117 156.25deg);
+  --color-hunter-green-600: oklch(57.75% 0.099 156.46deg);
+  --color-hunter-green-700: oklch(47.05% 0.078 156.88deg);
+  --color-hunter-green-800: oklch(35.69% 0.055 157.68deg);
+  --color-hunter-green-900: oklch(23.58% 0.033 157.24deg);
+  --color-hunter-green-950: oklch(19.42% 0.023 159.66deg);
+  --color-blue-energy-50: oklch(95.7% 0.015 247.99deg);
+  --color-blue-energy-100: oklch(91.23% 0.033 252.47deg);
+  --color-blue-energy-200: oklch(82.69% 0.067 251.39deg);
+  --color-blue-energy-300: oklch(74.07% 0.102 252.29deg);
+  --color-blue-energy-400: oklch(65.72% 0.136 253.33deg);
+  --color-blue-energy-500: oklch(57.93% 0.169 255.2deg);
+  --color-blue-energy-600: oklch(49.4% 0.141 254.93deg);
+  --color-blue-energy-700: oklch(40.54% 0.113 254.58deg);
+  --color-blue-energy-800: oklch(31.12% 0.081 253.83deg);
+  --color-blue-energy-900: oklch(20.66% 0.046 253.72deg);
+  --color-blue-energy-950: oklch(17.44% 0.035 251.91deg);
+  --color-dusty-rose-50: oklch(95.17% 0.015 7.49deg);
+  --color-dusty-rose-100: oklch(90.5% 0.03 12.62deg);
+  --color-dusty-rose-200: oklch(81.07% 0.063 13.6deg);
+  --color-dusty-rose-300: oklch(71.88% 0.099 14.24deg);
+  --color-dusty-rose-400: oklch(63.19% 0.137 16.66deg);
+  --color-dusty-rose-500: oklch(55.57% 0.171 20.23deg);
+  --color-dusty-rose-600: oklch(47.35% 0.143 19.86deg);
+  --color-dusty-rose-700: oklch(38.76% 0.113 19.25deg);
+  --color-dusty-rose-800: oklch(29.67% 0.081 19.25deg);
+  --color-dusty-rose-900: oklch(19.92% 0.046 17.63deg);
+  --color-dusty-rose-950: oklch(16.66% 0.034 14.48deg);
+}
+
+/* One family per job, so a colour tells you what it is before you read the label:
+   almond cream is every surface and every neutral text tone, blue energy is
+   anything you can operate plus the card it draws, hunter green means code, and
+   dusty rose is reserved for the few places that have to interrupt you. Steps
+   track the lightness ordering the page had before, so contrast stays put. */
+/* stylelint-disable-next-line no-duplicate-selectors -- kept apart from the palette above */
+:root {
+  --color-text-primary: var(--color-sunflower-gold-950);
+  --color-text-secondary: var(--color-sunflower-gold-900);
+  --color-accent: var(--color-blue-energy-600);
+  --color-page: var(--color-sunflower-gold-20);
+  --color-muted: var(--color-almond-cream-700);
+  --color-kicker: var(--color-dusty-rose-600);
+  --color-warning-border: var(--color-dusty-rose-500);
+  --color-warning-text: var(--color-dusty-rose-700);
+  --color-border: var(--color-almond-cream-200);
+  --color-divider: var(--color-almond-cream-100);
+  --color-surface: var(--color-sunflower-gold-50);
+  --color-dot: var(--color-almond-cream-300);
+  --color-card-text: var(--color-sunflower-gold-50);
+  --color-card-start: var(--color-blue-energy-600);
+  --color-card-end: var(--color-blue-energy-800);
+  --color-label: var(--color-almond-cream-700);
+
+  /* Two jobs that pull opposite ways: the ring has to stand off the page, the
+     soft fill has to stay light enough for accent text to sit on it. */
+  --color-focus: var(--color-blue-energy-500);
+  --color-accent-soft: var(--color-blue-energy-100);
+  --color-control-bg: var(--color-sunflower-gold-50);
+  --color-secondary: var(--color-almond-cream-600);
+  --color-group-border: var(--color-almond-cream-200);
+  --color-group-title: var(--color-almond-cream-900);
+  --color-syntax-comment: var(--color-almond-cream-600);
+  --color-syntax-keyword: var(--color-dusty-rose-600);
+  --color-syntax-number: var(--color-sunflower-gold-700);
+  --color-syntax-string: var(--color-hunter-green-700);
+  --color-syntax-function: var(--color-blue-energy-600);
+  --color-transparent: oklch(0% 0 0deg / 0%);
+  --color-code: var(--color-hunter-green-700);
+
+  /* Live state, not design tokens. Colours are the only thing this subproject keeps in a
+     custom property by choice; everything below is here because `_lib/generator.ts`
+     rewrites it on `documentElement.style` on every input event, and these values are
+     only the starting position the page is server-rendered in.
+
+     --size          share of the preview frame the card fills, 0.1 to 1
+     --ratio         card width divided by card height
+     --p             card padding as a percentage — resolved against the frame, so
+                     `.preview-card` scales it back down to the card itself
+     --fs            card font size, in rem
+     --r-tl/tr/br/bl per-corner border-radius of the enhanced tier
+     --fb-r-*        per-corner border-radius of the plain fallback tier, one per corner
+     --shape-*       per-corner `corner-shape` value: a keyword or `superellipse()`
+     --preview-clip  the exact fallback's outline as a clip-path, or `none` when the
+                     shape needs no path (all-round, all-square) */
+  --size: 0.6;
+  --ratio: 1;
+  --p: 10%;
+  --fs: 1rem;
+  --r-tl: 1rem;
+  --r-tr: 1rem;
+  --r-br: 1rem;
+  --r-bl: 1rem;
+  --fb-r-tl: 0.583rem;
+  --fb-r-tr: 0.583rem;
+  --fb-r-br: 0.583rem;
+  --fb-r-bl: 0.583rem;
+  --shape-tl: squircle;
+  --shape-tr: squircle;
+  --shape-br: squircle;
+  --shape-bl: squircle;
+  --preview-clip: none;
+
+  min-width: 20rem;
+
+  font-family: var(--font-atkinson), system-ui, sans-serif;
+  color: var(--color-text-primary);
+
+  color-scheme: light;
+  accent-color: var(--color-accent);
+  background: var(--color-page);
+}
+
+@layer reset {
+  p sup {
+    font-size: 0.8em;
+    line-height: 0;
+  }
+}
+
+/* Everything below is shared across the page's components. A component's own stylesheet
+   holds only its layout; anything two of them would otherwise copy lives here, unlayered
+   rules in those files beating these by virtue of the cascade layer. */
+@layer ui {
+  .page {
+    max-width: 83rem;
+    margin-inline: auto;
+    padding: clamp(1.25rem, 4vw, 3rem) 1.5rem 4rem;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--color-kicker);
+    text-transform: uppercase;
+  }
+
+  .code {
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: 1.04em;
+    font-weight: 500;
+    color: var(--color-code);
+    letter-spacing: -0.04em;
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+
+  /* Form fields */
+
+  .field {
+    display: grid;
+    margin-bottom: 0.65rem;
+  }
+
+  .field-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-label);
+  }
+
+  .field-hint {
+    display: block;
+    font-weight: 400;
+    color: var(--color-secondary);
+  }
+
+  .text-input {
+    min-width: 0;
+    padding: 0.32rem 0.5rem;
+    border: 0;
+    border-bottom: 1px solid var(--color-group-border);
+
+    font-size: 0.8rem;
+    color: inherit;
+
+    background: var(--color-transparent);
+  }
+
+  .range-input {
+    width: 100%;
+  }
+
+  /* A slider and its typed value, side by side under one label. */
+  .control-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem;
+    gap: 0.3rem 0.5rem;
+    align-items: center;
+
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .control-pair .field-label {
+    grid-column: 1 / -1;
+  }
+
+  /* Chips: a radio or checkbox wearing its label as the whole hit area, the input itself
+     taken out of the flow. Focus has to be borrowed from it by the label. */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .chip {
+    cursor: pointer;
+
+    position: relative;
+
+    padding: 0.42rem 0.62rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    background: var(--color-control-bg);
+  }
+
+  .chip-input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .chip:has(.chip-input:checked) {
+    border-color: var(--color-accent);
+    color: var(--color-surface);
+    background: var(--color-accent);
+  }
+
+  .button {
+    cursor: pointer;
+
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.35rem;
+
+    font-weight: 750;
+    color: var(--color-surface);
+
+    background: var(--color-accent);
+  }
+
+  .button-ghost {
+    color: var(--color-accent);
+    background: var(--color-control-bg);
+  }
+
+  .text-input:focus-visible,
+  .range-input:focus-visible,
+  .button:focus-visible,
+  .chip:has(:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,95 @@
+.page-head {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.page-title {
+  margin: 0;
+
+  font-size: clamp(2.4rem, 6.6vw, 5.4rem);
+  font-weight: 800;
+  line-height: 0.9;
+  color: var(--color-blue-energy-500);
+  text-shadow: 0 -7px 0
+    color-mix(var(--color-blue-energy-100) clamp(10%, calc((100vw / 20px) * 1%), 80%), transparent);
+  letter-spacing: -0.02em;
+}
+
+.page-intro {
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  text-wrap: balance;
+
+  & .code {
+    font-weight: 700;
+  }
+}
+
+.about {
+  padding-inline-start: 1rem;
+  border-left: 3px solid var(--color-border);
+}
+
+.about-summary {
+  cursor: pointer;
+  width: fit-content;
+  font-size: 1.1rem;
+
+  &::marker {
+    content: "";
+  }
+}
+
+.about-content {
+  container-type: inline-size;
+  column-width: 36ch;
+  column-fill: balance;
+  column-gap: 4.4rem;
+
+  padding-top: 0.75rem;
+
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.44;
+  color: var(--color-text-secondary);
+
+  a,
+  a .code {
+    transition: all 0.2s ease-in;
+  }
+
+  & a:has(.code) {
+    text-decoration-color: var(--color-code);
+    text-decoration-thickness: 2.5px;
+    text-underline-offset: 0.16em;
+  }
+
+  & a:has(.code):has(:hover) {
+    text-decoration-color: var(--color-blue-energy-400);
+  }
+
+  & a:hover .code {
+    color: var(--color-blue-energy-400);
+  }
+
+  strong {
+    color: var(--color-text-primary);
+  }
+}
+
+.about-paragraph {
+  orphans: 2;
+  break-inside: auto;
+  margin-bottom: 0.44rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.about-link {
+  color: var(--color-accent);
+}
