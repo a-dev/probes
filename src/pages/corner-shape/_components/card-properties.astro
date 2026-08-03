@@ -2,15 +2,10 @@
 import { DIMENSIONS } from "../_lib/controls";
 
 import SliderField from "./slider-field.astro";
-import "./card-properties.css";
-
-// Everything about the card that is not a corner. It is folded away by default because
-// the defaults are already a fair test — you only open it when the shape you are judging
-// needs a different box to be fair to it.
 ---
 
-<details class="panel card-properties">
-  <summary class="card-properties-summary">Card size and text</summary>
+<details class="root">
+  <summary class="summary">Size and text <span class="arrow">→</span></summary>
   <div class="card-properties-content">
     <label class="field">
       <span class="field-label">Preview text</span>
@@ -36,3 +31,60 @@ import "./card-properties.css";
     </div>
   </div>
 </details>
+<style>
+  .root {
+    overflow: hidden;
+    &::details-content {
+      block-size: 0;
+      transition:
+        block-size 0.2s linear,
+        content-visibility 0.2s linear;
+      transition-behavior: allow-discrete;
+    }
+
+    &[open] .arrow {
+      transform: rotate(45deg);
+    }
+
+    &[open]::before {
+      width: 100%;
+    }
+
+    &[open]::details-content {
+      block-size: auto;
+    }
+  }
+  .summary {
+    cursor: pointer;
+
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+
+    width: fit-content;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    &::marker {
+      content: "";
+    }
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-top: -1px;
+    font-weight: 800;
+    transition: transform 0.2s linear;
+  }
+
+  .card-properties-content {
+    padding-top: 1rem;
+  }
+
+  .dimension-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+import "./toggle.css";
+
+// A radio group that reads as one switch. Every choice the generator offers is
+// mutually exclusive — rem or px, all corners or one, enhanced or fallback, one named
+// shape out of six — so they all get the same control: a single track with a thumb that
+// slides to the option you picked, rather than a row of buttons lighting up one at a
+// time. The count is the only thing that changes between two options and six.
+//
+// The inputs stay real radios with real names: `_lib/generator.ts` serialises the form
+// and never touches this markup, so a toggle needs no script of its own.
+export interface ToggleOption {
+  label: string;
+  value: string;
+  /** Spoken/hover text, for labels the track may be too narrow to show in full. */
+  title?: string;
+  /** `data-preset-for` — the shape field this option writes into, if it drives one. */
+  presetFor?: string;
+}
+
+interface Props {
+  name: string;
+  legend?: string;
+  options: ToggleOption[];
+  value?: string;
+  size?: "s" | "m";
+  block?: boolean;
+  class?: string;
+}
+
+const {
+  name,
+  legend,
+  options,
+  value,
+  size = "s",
+  block = false,
+  class: className,
+} = Astro.props;
+---
+
+<fieldset
+  class:list={["toggle-field", className]}
+  aria-label={legend ?? undefined}
+>
+  {Boolean(legend) && <legend class="field-label">{legend}</legend>}
+  <div
+    class:list={[
+      "toggle",
+      `toggle-${size}`,
+      `rounded-${size}`,
+      { "toggle-block": block },
+    ]}
+    style={`--toggle-count: ${options.length}`}
+  >
+    {
+      options.map((option, index) => (
+        <Fragment>
+          <input
+            class="toggle-input"
+            id={`${name}-${index}`}
+            type="radio"
+            name={name}
+            value={option.value}
+            checked={option.value === value}
+            data-preset-for={option.presetFor}
+          />
+          <label
+            class:list={["toggle-option", `rounded-${size}`]}
+            for={`${name}-${index}`}
+            title={option.title ?? option.label}
+          >
+            {option.label}
+          </label>
+        </Fragment>
+      ))
+    }
+  </div>
+</fieldset>

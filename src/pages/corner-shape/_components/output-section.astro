@@ -1,4 +1,5 @@
 ---
+import Toggle from "./toggle.astro";
 import "./output-section.css";
 
 // The take-away. The order is the point: the fallback declaration comes first so every
@@ -9,29 +10,39 @@ import "./output-section.css";
 ---
 
 <section class="output-section" aria-labelledby="output-title">
+  <pre id="css-output" class="css-output" tabindex="0"></pre>
   <div class="output-controls">
     <div>
-      <button id="copy-css" class="button copy-css-button" type="button"
-        >Copy CSS</button
+      <button
+        id="copy-css"
+        class="button copy-css-button rounded-m"
+        type="button">Copy CSS</button
       >
       <p id="copy-status" class="copy-status" aria-live="polite"></p>
     </div>
     <div class="output-options">
+      <label class="exact-toggle">
+        <input
+          class="exact-toggle-input"
+          type="checkbox"
+          name="exact"
+          role="switch"
+        /> Exact fallback
+      </label>
       <label class="selector-field">
         <span class="field-label">Selector</span>
         <input class="text-input" name="selector" type="text" value=".card" />
       </label>
-      <div class="unit-field">
-        <div class="field-label">Unit</div>
-        <input id="unit" type="hidden" name="unit" value="rem" />
-        <button
-          id="toggle-unit"
-          class="button button-ghost"
-          type="button"
-          aria-label="Unit: rem. Switch to px">rem</button
-        >
-      </div>
+      <Toggle
+        name="unit"
+        legend="Unit"
+        value="rem"
+        class="unit-toggle"
+        options={[
+          { label: "rem", value: "rem" },
+          { label: "px", value: "px" },
+        ]}
+      />
     </div>
   </div>
-  <pre id="css-output" class="css-output" tabindex="0"></pre>
 </section>

@@ -1,4 +1,5 @@
 ---
+import Toggle from "./toggle.astro";
 import "./stage.css";
 
 // The card itself, plus the two switches that decide which tier draws it. Nothing here
@@ -15,41 +16,16 @@ import "./stage.css";
   aria-labelledby="preview-title"
 >
   <div class="stage-head">
-    <div>
-      <p class="eyebrow">Preview</p>
-      <h2 id="preview-title" class="section-title">
-        Flip between the two, same box
-      </h2>
-    </div>
-    <div class="stage-actions">
-      <fieldset class="chip-group" aria-label="Preview rendering">
-        <label class="chip"
-          ><input
-            class="chip-input"
-            type="radio"
-            name="preview"
-            value="enhanced"
-            checked
-          /> Enhanced</label
-        >
-        <label class="chip"
-          ><input
-            class="chip-input"
-            type="radio"
-            name="preview"
-            value="fallback"
-          /> Fallback</label
-        >
-      </fieldset>
-      <label class="chip exact-toggle">
-        <input
-          class="exact-toggle-input"
-          type="checkbox"
-          name="exact"
-          role="switch"
-        /> Exact fallback
-      </label>
-    </div>
+    <div class="eyebrow">Preview</div>
+    <Toggle
+      name="preview"
+      size="m"
+      value="enhanced"
+      options={[
+        { label: "Enhanced", value: "enhanced" },
+        { label: "Fallback", value: "fallback" },
+      ]}
+    />
   </div>
   <figure aria-hidden="true" class="preview-wrapper">
     <div id="preview-card" class="preview-card">

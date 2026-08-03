@@ -48,10 +48,10 @@ export const DIMENSIONS = [
 
 // The four corners, in the order `border-radius` writes them.
 export const CORNER_LABELS: { id: Corner; label: string }[] = [
-  { id: "tl", label: "Top left" },
-  { id: "tr", label: "Top right" },
-  { id: "br", label: "Bottom right" },
-  { id: "bl", label: "Bottom left" },
+  { id: "tl", label: "top-left" },
+  { id: "tr", label: "top-right" },
+  { id: "br", label: "bottom-right" },
+  { id: "bl", label: "bottom-left" },
 ];
 
 // The named stops on the shape scale. `s` is an exponent, so the two ends are the
@@ -67,7 +67,6 @@ export const PRESETS = [
 
 export const DEFAULT_SHAPE = "2";
 export const DEFAULT_RADIUS = "1";
-export const DEFAULT_FALLBACK_RADIUS = "0.583";
 
 // Shape and radius take the same two ranges everywhere they appear.
 export const SHAPE_RANGE = { min: -3, max: 5, step: 0.1 } as const;

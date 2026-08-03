@@ -17,9 +17,6 @@ const card = document.querySelector<HTMLElement>("#preview-card")!;
 const readout = document.querySelector<HTMLElement>("#value-readout")!;
 const output = document.querySelector<HTMLElement>("#css-output")!;
 const copyStatus = document.querySelector<HTMLElement>("#copy-status")!;
-const unit = document.querySelector<HTMLInputElement>("#unit")!;
-const unitToggle = document.querySelector<HTMLButtonElement>("#toggle-unit")!;
-const overrides = new Set<string>();
 
 function number(data: Record<string, FormDataEntryValue>, name: string): number {
   return Number(data[name]);
@@ -64,10 +61,7 @@ function makeState(
   const individual = data.mode === "individual";
   const shapes = values((corner) => shape(data, individual ? `shape-${corner}` : "shape-all"));
   const radii = values((corner) => number(data, individual ? `radius-${corner}` : "radius-all"));
-  const fallbackRadii = values((corner) => {
-    const key = individual ? `fb-${corner}` : "fb-all";
-    return overrides.has(key) ? number(data, key) : computedFallback(radii[corner], shapes[corner]);
-  });
+  const fallbackRadii = values((corner) => computedFallback(radii[corner], shapes[corner]));
   return {
     selector: text(data.selector),
     unit: data.unit === "px" ? "px" : "rem",
@@ -78,16 +72,6 @@ function makeState(
     fallbackRadii,
     exact: data.exact === "on",
   };
-}
-
-function setFallbackFields(state: GeneratorState, individual: boolean): void {
-  const fields = individual ? CORNERS : (["all"] as const);
-  for (const field of fields) {
-    const corner = field === "all" ? "tl" : field;
-    const input = form.elements.namedItem(`fb-${field}`) as HTMLInputElement;
-    if (!overrides.has(`fb-${field}`))
-      input.value = Number(state.fallbackRadii[corner].toFixed(3)).toString();
-  }
 }
 
 function render(data: Record<string, FormDataEntryValue>): void {
@@ -115,7 +99,6 @@ function render(data: Record<string, FormDataEntryValue>): void {
   card.textContent = text(data.text) || " ";
   const declarations = declarationValues(state);
   readout.textContent = `border-radius: ${declarations.radius};\ncorner-shape: ${declarations.shape};`;
-  setFallbackFields(state, individual);
   output.textContent = emitCss(state);
   void highlightElement(output, "css", "multiline", { hideLineNumbers: true });
   form.dataset.mode = individual ? "individual" : "all";
@@ -166,11 +149,6 @@ form.addEventListener("input", (event) => {
   const target = event.target as HTMLInputElement;
   selectPreset(target);
   syncPair(target);
-  if (target.name.startsWith("fb-")) overrides.add(target.name);
-  const binding = target.dataset.bind ?? target.dataset.presetFor;
-  if (binding?.startsWith("shape-") || binding?.startsWith("radius-")) {
-    overrides.delete(`fb-${binding.split("-").at(-1)}`);
-  }
   const data = Object.fromEntries(new FormData(form));
   updatePresetStates(data);
   render(data);
@@ -185,12 +163,5 @@ document.querySelector("#copy-css")!.addEventListener("click", async () => {
 // A frame that grows with the viewport moves the point where the radii start clamping,
 // and the clamp is baked into the emitted clip path.
 window.addEventListener("resize", () => render(Object.fromEntries(new FormData(form))));
-
-unitToggle.addEventListener("click", () => {
-  unit.value = unit.value === "rem" ? "px" : "rem";
-  unitToggle.textContent = unit.value;
-  unitToggle.ariaLabel = `Unit: ${unit.value}. Switch to ${unit.value === "rem" ? "px" : "rem"}`;
-  unit.dispatchEvent(new Event("input", { bubbles: true }));
-});
 
 render(Object.fromEntries(new FormData(form)));

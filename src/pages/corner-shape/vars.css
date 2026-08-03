@@ -26,6 +26,7 @@
   --color-almond-cream-800: oklch(33.64% 0.043 62.67deg);
   --color-almond-cream-900: oklch(22.41% 0.025 63.25deg);
   --color-almond-cream-950: oklch(18.6% 0.018 58.26deg);
+  --color-hunter-green-20: oklch(98.8% 0.009 163.06deg);
   --color-hunter-green-50: oklch(96.8% 0.012 162.05deg);
   --color-hunter-green-100: oklch(93.5% 0.025 160.58deg);
   --color-hunter-green-200: oklch(86.9% 0.047 160.95deg);
@@ -73,12 +74,23 @@
 
   /* checked */
   --color-eyebrow: var(--color-dusty-rose-300);
+  --color-label: var(--color-dusty-rose-50);
   --color-info-surface: var(--color-dusty-rose-50);
   --color-info-border: var(--color-dusty-rose-200);
-  --color-code-surface: var(--color-hunter-green-50);
+  --color-accent: var(--color-blue-energy-500);
+  --color-group-border: var(--color-dusty-rose-100);
+  --color-card-start: var(--color-blue-energy-400);
+  --color-card-end: var(--color-blue-energy-600);
+
+  /* toggle */
+  --color-toggle-background: var(--color-blue-energy-50);
+  --color-toggle-border: var(--color-blue-energy-200);
+  --color-toggle-thumb: var(--color-blue-energy-500);
+  --color-toggle-text: var(--color-blue-energy-800);
+  --color-toggle-text-on-thumb: var(--color-blue-energy-50);
+  --color-toggle-focus: var(--color-blue-energy-900);
 
   /* 1 */
-  --color-accent: var(--color-blue-energy-600);
   --color-page: var(--color-sunflower-gold-20);
   --color-muted: var(--color-almond-cream-700);
   --color-warning-border: var(--color-dusty-rose-500);
@@ -88,9 +100,6 @@
   --color-surface: var(--color-sunflower-gold-50);
   --color-dot: var(--color-almond-cream-300);
   --color-card-text: var(--color-sunflower-gold-50);
-  --color-card-start: var(--color-blue-energy-600);
-  --color-card-end: var(--color-blue-energy-800);
-  --color-label: var(--color-almond-cream-700);
 
   /* Two jobs that pull opposite ways: the ring has to stand off the page, the
      soft fill has to stay light enough for accent text to sit on it. */
@@ -98,7 +107,6 @@
   --color-accent-soft: var(--color-blue-energy-100);
   --color-control-bg: var(--color-sunflower-gold-50);
   --color-secondary: var(--color-almond-cream-600);
-  --color-group-border: var(--color-almond-cream-200);
   --color-group-title: var(--color-almond-cream-900);
   --color-syntax-comment: var(--color-almond-cream-600);
   --color-syntax-keyword: var(--color-dusty-rose-600);
@@ -106,7 +114,9 @@
   --color-syntax-string: var(--color-hunter-green-700);
   --color-syntax-function: var(--color-blue-energy-600);
   --color-transparent: oklch(0% 0 0deg / 0%);
-  --color-code: var(--color-hunter-green-700);
+  --color-code-text: var(--color-hunter-green-600);
+  --color-code-surface: var(--color-hunter-green-50);
+  --color-code-border: var(--color-hunter-green-100);
 
   /* Live state, not design tokens. Colours are the only thing this subproject keeps in a
      custom property by choice; everything below is here because `_lib/generator.ts`

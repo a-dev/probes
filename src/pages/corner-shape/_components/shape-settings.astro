@@ -1,8 +1,9 @@
 ---
 import { CORNER_LABELS } from "../_lib/controls";
-
+import CardProperties from "./card-properties.astro";
 import CornerFields from "./corner-fields.astro";
-import "./shape-settings.css";
+import Toggle from "./toggle.astro";
+// import "./shape-settings.css";
 
 // The corners. Two sets of the same controls live in the markup at once and the mode
 // switch shows one of them — keeping both mounted means the form always serialises a
@@ -10,34 +11,22 @@ import "./shape-settings.css";
 // you flip between them.
 ---
 
-<section class="panel shape-settings" aria-labelledby="controls-title">
-  <div class="section-head">
-    <p class="eyebrow">Controls</p>
-    <h2 id="controls-title" class="section-title">Shape the card</h2>
+<section class="root" aria-labelledby="controls-title">
+  <div class="header">
+    <div class="eyebrow">Controls</div>
+    <CardProperties />
   </div>
-
-  <fieldset class="mode-control">
-    <legend class="field-label">Corner mode</legend>
-    <div class="chip-group">
-      <label class="chip"
-        ><input
-          class="chip-input"
-          type="radio"
-          name="mode"
-          value="all"
-          checked
-        /> All</label
-      >
-      <label class="chip"
-        ><input
-          class="chip-input"
-          type="radio"
-          name="mode"
-          value="individual"
-        /> Individual</label
-      >
-    </div>
-  </fieldset>
+  <Toggle
+    class="mode-toggle"
+    name="mode"
+    legend="Corner shapes"
+    size="m"
+    value="all"
+    options={[
+      { label: "All", value: "all" },
+      { label: "Individual", value: "individual" },
+    ]}
+  />
 
   <div class="corner-controls all-controls">
     <CornerFields target="all" />
@@ -54,3 +43,66 @@ import "./shape-settings.css";
     }
   </div>
 </section>
+<style>
+  .root {
+  }
+
+  .header {
+    padding-block-end: 2rem;
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  .title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  :global(.mode-toggle) {
+    margin-block: 0.8rem 1.8rem;
+  }
+
+  .header-corners {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .corner-controls,
+  .corner-group {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .corner-grid {
+    display: none;
+    gap: 1.8rem;
+  }
+
+  /* Both sets of controls stay in the DOM and the mode switch shows one of them, so the
+   form always serialises a complete answer for whichever mode is active. */
+
+  :global(.generator-form[data-mode="individual"]) .all-controls {
+    display: none;
+  }
+
+  :global(.generator-form[data-mode="individual"]) .individual-controls {
+    display: grid;
+  }
+
+  .corner-group {
+    min-width: 0;
+    padding: 0.6rem 0;
+    border: 0;
+    border-top: 5px solid var(--color-group-border);
+  }
+
+  .corner-group-legend {
+    padding-inline-end: 0.8rem;
+
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: 1.1rem;
+    color: var(--color-code-text);
+    text-transform: lowercase;
+  }
+</style>
