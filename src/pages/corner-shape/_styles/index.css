@@ -1,0 +1,281 @@
+@layer reset, ui;
+
+@import url("./colors.css");
+@import url("./vars.css");
+@import url("../../../shared/styles/reset.css") layer(reset);
+
+html {
+  min-width: 20rem;
+
+  font-family: var(--font-atkinson), system-ui, sans-serif;
+  color: var(--color-text-primary);
+
+  color-scheme: light;
+  accent-color: var(--color-accent);
+  background: var(--color-page-background);
+}
+
+@layer reset {
+  p sup {
+    font-size: 0.8em;
+    line-height: 0;
+  }
+}
+
+/* Everything below is shared across the page's components. A component's own stylesheet
+   holds only its layout; anything two of them would otherwise copy lives here, unlayered
+   rules in those files beating these by virtue of the cascade layer. */
+@layer ui {
+  *:focus-visible {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: 2px;
+  }
+
+  .page {
+    max-width: 83rem;
+    margin-inline: auto;
+    padding: clamp(1.25rem, 4vw, 3rem) 1.5rem 0;
+  }
+
+  .eyebrow {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--color-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .code {
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: 1.04em;
+    font-weight: 500;
+    color: var(--color-code-text);
+    letter-spacing: -0.04em;
+  }
+
+  .code-no-wrap {
+    white-space: nowrap;
+  }
+
+  /* Form fields */
+
+  .field {
+    display: grid;
+    margin-bottom: 0.65rem;
+  }
+
+  .field-label {
+    width: fit-content;
+    margin-block-end: 0.4rem;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-form-label);
+  }
+
+  .text-input {
+    min-width: 0;
+    padding: 0.32rem 0.5rem;
+    border: 1px solid var(--color-input-border);
+
+    font-size: 1rem;
+    color: inherit;
+
+    background: var(--color-input-background);
+  }
+
+  /* A slider and its typed value, side by side under one label. */
+  .control-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem;
+    gap: 0.3rem 0.5rem;
+    align-items: center;
+
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .control-pair .field-label {
+    margin-bottom: -0.4rem;
+  }
+
+  /* A hairline track and a ring for a thumb; the ring fills in while it is held. Only
+     Firefox ships a progress pseudo-element, so the played half of the track is a
+     background gradient instead, sized by `--progress` (0–1, set in `_lib/generator.ts`)
+     against the distance the thumb's centre actually travels. */
+  .range-input {
+    --track-height: 0.25rem;
+    --thumb-size: 1.1rem;
+
+    cursor: pointer;
+
+    width: 100%;
+    height: var(--thumb-size);
+
+    appearance: none;
+    background:
+      linear-gradient(var(--color-range-accent) 0 0) no-repeat 0 50% /
+        calc(var(--progress, 0) * (100% - var(--thumb-size)) + var(--thumb-size) / 2)
+        var(--track-height),
+      linear-gradient(var(--color-range-track) 0 0) no-repeat 0 50% / 100% var(--track-height);
+  }
+
+  .range-input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border: 0.18rem solid var(--color-range-accent);
+    border-radius: 50%;
+
+    appearance: none;
+    background: var(--color-page-background);
+    outline: 0.28rem solid var(--color-page-background);
+
+    transition: background 0.1s ease-in;
+  }
+
+  .range-input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border: 0.18rem solid var(--color-range-accent);
+    border-radius: 50%;
+
+    background: var(--color-page-background);
+
+    transition: background 0.1s ease-in;
+  }
+
+  .range-input:is(:hover, :active, :focus-visible)::-webkit-slider-thumb {
+    background: var(--color-range-accent);
+  }
+
+  .range-input:is(:hover, :active, :focus-visible)::-moz-range-thumb {
+    background: var(--color-range-accent);
+  }
+
+  .button {
+    cursor: pointer;
+
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.35rem;
+
+    font-weight: 750;
+    color: var(--color-surface);
+
+    background: var(--color-accent);
+  }
+
+  .range-input ~ .text-input {
+    margin-top: -1px;
+  }
+
+  .text-input:focus-visible,
+  .range-input:focus-visible,
+  .button:focus-visible {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: 2px;
+  }
+
+  /* rounded */
+
+  .rounded-m,
+  .rounded-m::before {
+    clip-path: shape(
+      from 1.349rem 0,
+      line to calc(100% - 1.349rem) 0,
+      curve to calc(100% - 0.331rem) 0.331rem with calc(100% - 0.84rem) 0 / calc(100% - 0.548rem)
+        0.114rem,
+      curve to 100% 1.349rem with calc(100% - 0.114rem) 0.548rem / 100% 0.84rem,
+      line to 100% calc(100% - 1.349rem),
+      curve to calc(100% - 0.331rem) calc(100% - 0.331rem) with 100% calc(100% - 0.84rem) /
+        calc(100% - 0.114rem) calc(100% - 0.548rem),
+      curve to calc(100% - 1.349rem) 100% with calc(100% - 0.548rem) calc(100% - 0.114rem) /
+        calc(100% - 0.84rem) 100%,
+      line to 1.349rem 100%,
+      curve to 0.331rem calc(100% - 0.331rem) with 0.84rem 100% / 0.548rem calc(100% - 0.114rem),
+      curve to 0 calc(100% - 1.349rem) with 0.114rem calc(100% - 0.548rem) / 0 calc(100% - 0.84rem),
+      line to 0 1.349rem,
+      curve to 0.331rem 0.331rem with 0 0.84rem / 0.114rem 0.548rem,
+      curve to 1.349rem 0 with 0.548rem 0.114rem / 0.84rem 0,
+      close
+    );
+  }
+
+  @supports (corner-shape: superellipse(1.3)) {
+    .rounded-m,
+    .rounded-m::before {
+      border-radius: 1.6rem;
+      clip-path: none;
+
+      corner-shape: superellipse(1.3);
+    }
+  }
+
+  .rounded-s,
+  .rounded-s::before {
+    clip-path: shape(
+      from 1.03rem 0,
+      line to calc(100% - 1.03rem) 0,
+      curve to calc(100% - 0.268rem) 0.268rem with calc(100% - 0.68rem) 0 / calc(100% - 0.443rem)
+        0.093rem,
+      curve to 100% 1.03rem with calc(100% - 0.093rem) 0.443rem / 100% 0.68rem,
+      line to 100% calc(100% - 1.03rem),
+      curve to calc(100% - 0.268rem) calc(100% - 0.268rem) with 100% calc(100% - 0.68rem) /
+        calc(100% - 0.093rem) calc(100% - 0.443rem),
+      curve to calc(100% - 1.03rem) 100% with calc(100% - 0.443rem) calc(100% - 0.093rem) /
+        calc(100% - 0.68rem) 100%,
+      line to 1.03rem 100%,
+      curve to 0.268rem calc(100% - 0.268rem) with 0.68rem 100% / 0.443rem calc(100% - 0.093rem),
+      curve to 0 calc(100% - 1.03rem) with 0.093rem calc(100% - 0.443rem) / 0 calc(100% - 0.68rem),
+      line to 0 1.03rem,
+      curve to 0.268rem 0.268rem with 0 0.68rem / 0.093rem 0.443rem,
+      curve to 1.03rem 0 with 0.443rem 0.093rem / 0.68rem 0,
+      close
+    );
+  }
+
+  @supports (corner-shape: superellipse(1.2)) {
+    .rounded-s,
+    .rounded-s::before {
+      border-radius: 1.4rem;
+      clip-path: none;
+
+      corner-shape: superellipse(1.2);
+    }
+  }
+
+  .rounded-xs {
+    clip-path: shape(
+      from 0.8rem 0,
+      line to calc(100% - 0.8rem) 0,
+      curve to calc(100% - 0.185rem) 0.185rem with calc(100% - 0.468rem) 0 / calc(100% - 0.307rem)
+        0.063rem,
+      curve to 100% 0.8rem with calc(100% - 0.063rem) 0.307rem / 100% 0.468rem,
+      line to 100% calc(100% - 0.8rem),
+      curve to calc(100% - 0.185rem) calc(100% - 0.185rem) with 100% calc(100% - 0.468rem) /
+        calc(100% - 0.063rem) calc(100% - 0.307rem),
+      curve to calc(100% - 0.8rem) 100% with calc(100% - 0.307rem) calc(100% - 0.063rem) /
+        calc(100% - 0.468rem) 100%,
+      line to 0.8rem 100%,
+      curve to 0.185rem calc(100% - 0.185rem) with 0.468rem 100% / 0.307rem calc(100% - 0.063rem),
+      curve to 0 calc(100% - 0.8rem) with 0.063rem calc(100% - 0.307rem) / 0 calc(100% - 0.468rem),
+      line to 0 0.8rem,
+      curve to 0.185rem 0.185rem with 0 0.468rem / 0.063rem 0.307rem,
+      curve to 0.8rem 0 with 0.307rem 0.063rem / 0.468rem 0,
+      close
+    );
+  }
+
+  @supports (corner-shape: superellipse(1.4)) {
+    .rounded-xs {
+      border-radius: 0.8rem;
+      clip-path: none;
+
+      corner-shape: superellipse(1.4);
+    }
+  }
+}

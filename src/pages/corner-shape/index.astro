@@ -1,0 +1,39 @@
+---
+import { Font } from "astro:assets";
+
+import Baseline from "./_components/baseline.astro";
+import Generator from "./_components/generator.astro";
+import Head from "./_components/head.astro";
+import SupportWarning from "./_components/support-warning.astro";
+import "./_styles/index.css";
+
+const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
+    <link rel="icon" href={`${baseUrl}favicon.ico`} />
+    <Font cssVariable="--font-atkinson" preload />
+    <Font cssVariable="--font-atkinson-mono" preload />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>CSS corner-shape generator | @a-dev/probes</title>
+    <script is:inline>
+      document.documentElement.dataset.cornerShape = CSS.supports(
+        "corner-shape: squircle",
+      )
+        ? "supported"
+        : "unsupported";
+    </script>
+  </head>
+  <body>
+    <main class="page">
+      <Head />
+      <SupportWarning />
+      <Generator />
+      <Baseline />
+    </main>
+  </body>
+</html>

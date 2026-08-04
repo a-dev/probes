@@ -1,0 +1,133 @@
+<script>
+  import "baseline-status";
+
+  const el = document.querySelector("baseline-status");
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(".name { display: none !important; }");
+
+  if (el?.shadowRoot?.adoptedStyleSheets) {
+    el.shadowRoot.adoptedStyleSheets = [
+      ...el.shadowRoot.adoptedStyleSheets,
+      sheet,
+    ];
+  }
+</script>
+
+<div class="root">
+  <div class="support-panel">
+    <div class="support-panel-content">
+      Browser support of&nbsp;<code class="code code-no-wrap">corner-shape</code
+      >
+    </div>
+    <baseline-status class="baseline-status" featureId="corner-shape">
+      Support data didn't load. Check the Web Platform Status dashboard.
+    </baseline-status>
+  </div>
+</div>
+
+<style>
+  .root {
+    isolation: isolate;
+    position: relative;
+    padding-block: 6rem;
+    padding-inline: 2.4rem;
+  }
+  .root:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    display: block;
+    width: 100dvw;
+    height: 100%;
+    background: var(--background-dots);
+    opacity: 0.6;
+  }
+  .support-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+
+    padding-block: 1.8rem;
+    padding-inline: 2.4rem;
+    border: 1px solid var(--color-border);
+
+    background: white;
+    clip-path: shape(
+      from 4.9rem 0,
+      line to calc(100% - 4.9rem) 0,
+      curve to calc(100% - 2.078rem) 0.218rem with calc(100% - 3.04rem) 0 /
+        calc(100% - 2.589rem) 0.072rem,
+      curve to calc(100% - 0.884rem) 0.884rem with calc(100% - 1.573rem)
+        0.362rem / calc(100% - 1.184rem) 0.585rem,
+      curve to calc(100% - 0.218rem) 2.078rem with calc(100% - 0.585rem)
+        1.184rem / calc(100% - 0.362rem) 1.573rem,
+      curve to 100% 4.9rem with calc(100% - 0.072rem) 2.589rem / 100% 3.04rem,
+      line to 100% calc(100% - 4.9rem),
+      curve to calc(100% - 0.218rem) calc(100% - 2.078rem) with 100%
+        calc(100% - 3.04rem) / calc(100% - 0.072rem) calc(100% - 2.589rem),
+      curve to calc(100% - 0.884rem) calc(100% - 0.884rem) with
+        calc(100% - 0.362rem) calc(100% - 1.573rem) / calc(100% - 0.585rem)
+        calc(100% - 1.184rem),
+      curve to calc(100% - 2.078rem) calc(100% - 0.218rem) with
+        calc(100% - 1.184rem) calc(100% - 0.585rem) / calc(100% - 1.573rem)
+        calc(100% - 0.362rem),
+      curve to calc(100% - 4.9rem) 100% with calc(100% - 2.589rem)
+        calc(100% - 0.072rem) / calc(100% - 3.04rem) 100%,
+      line to 4.9rem 100%,
+      curve to 2.078rem calc(100% - 0.218rem) with 3.04rem 100% / 2.589rem
+        calc(100% - 0.072rem),
+      curve to 0.884rem calc(100% - 0.884rem) with 1.573rem
+        calc(100% - 0.362rem) / 1.184rem calc(100% - 0.585rem),
+      curve to 0.218rem calc(100% - 2.078rem) with 0.585rem
+        calc(100% - 1.184rem) / 0.362rem calc(100% - 1.573rem),
+      curve to 0 calc(100% - 4.9rem) with 0.072rem calc(100% - 2.589rem) / 0
+        calc(100% - 3.04rem),
+      line to 0 4.9rem,
+      curve to 0.218rem 2.078rem with 0 3.04rem / 0.072rem 2.589rem,
+      curve to 0.884rem 0.884rem with 0.362rem 1.573rem / 0.585rem 1.184rem,
+      curve to 2.078rem 0.218rem with 1.184rem 0.585rem / 1.573rem 0.362rem,
+      curve to 4.9rem 0 with 2.589rem 0.072rem / 3.04rem 0,
+      close
+    );
+  }
+
+  @supports (corner-shape: superellipse(1.8)) {
+    .support-panel {
+      border-radius: 4.9rem;
+      clip-path: none;
+
+      corner-shape: superellipse(1.8);
+    }
+  }
+
+  .support-panel-content {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.24;
+
+    & .code {
+      font-weight: 700;
+    }
+  }
+
+  /* The widget ships its own card; the panel around it is already that card. */
+  .baseline-status {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  baseline-status::part(name) {
+    display: none;
+  }
+
+  @media (width <= 48rem) {
+    .support-panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

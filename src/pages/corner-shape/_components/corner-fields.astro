@@ -1,0 +1,61 @@
+---
+import {
+  DEFAULT_RADIUS,
+  DEFAULT_SHAPE,
+  RADIUS_RANGE,
+  SHAPE_RANGE,
+} from "../_lib/controls";
+
+import PresetToggle from "./preset-toggle.astro";
+import SliderField from "./slider-field.astro";
+
+// The three fields describing one corner: a preset, the exponent behind it, and the radius
+// it bends through. The fallback radius is derived from those, never typed. Identical for
+// all four corners or one, so only the name suffix and the spoken labels change.
+interface Props {
+  /** `all`, or one of `tl` / `tr` / `br` / `bl`. */
+  target: string;
+  /** Spoken name of the corner, e.g. "Top left". Unused when target is `all`. */
+  label?: string;
+}
+
+const { target, label = "" } = Astro.props;
+
+const isAll = target === "all";
+const shapeLabel = isAll ? "Shape" : `${label} shape`;
+const radiusLabel = isAll ? "Radius" : `${label} radius`;
+---
+
+<PresetToggle
+  name={`preset-${target}`}
+  target={`shape-${target}`}
+  legend={isAll ? "Presets" : "Preset"}
+  value={DEFAULT_SHAPE}
+  class="preset-group"
+/>
+
+<SliderField
+  name={`shape-${target}`}
+  label={shapeLabel}
+  min={SHAPE_RANGE.min}
+  max={SHAPE_RANGE.max}
+  step={SHAPE_RANGE.step}
+  value={DEFAULT_SHAPE}
+  type="text"
+  ariaValueText="squircle"
+  class="shape-control"
+>
+  Superellipse
+</SliderField>
+
+<SliderField
+  name={`radius-${target}`}
+  label={radiusLabel}
+  min={RADIUS_RANGE.min}
+  max={RADIUS_RANGE.max}
+  step={RADIUS_RANGE.step}
+  value={DEFAULT_RADIUS}
+  unit="rem"
+>
+  Radius
+</SliderField>

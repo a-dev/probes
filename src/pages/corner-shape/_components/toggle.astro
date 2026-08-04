@@ -1,0 +1,214 @@
+---
+// A radio group that reads as one switch: a track with a thumb that slides to the option
+// you picked. The count is all that changes between two options and six, and the inputs
+// stay real radios, so a toggle needs no script of its own.
+export interface ToggleOption {
+  label: string;
+  value: string;
+  /** Spoken/hover text, for labels the track may be too narrow to show in full. */
+  title?: string;
+  /** `data-preset-for` — the shape field this option writes into, if it drives one. */
+  presetFor?: string;
+}
+
+interface Props {
+  name: string;
+  legend?: string;
+  options: ToggleOption[];
+  value?: string;
+  size?: "s" | "m";
+  block?: boolean;
+  class?: string;
+}
+
+const {
+  name,
+  legend,
+  options,
+  value,
+  size = "s",
+  block = false,
+  class: className,
+} = Astro.props;
+---
+
+<fieldset
+  class:list={["toggle-field", className]}
+  aria-label={legend ?? undefined}
+>
+  {Boolean(legend) && <legend class="field-label">{legend}</legend>}
+  <div
+    class:list={[
+      "toggle",
+      `toggle-${size}`,
+      `rounded-${size}`,
+      { "toggle-block": block },
+    ]}
+    style={`--toggle-count: ${options.length}`}
+  >
+    {
+      options.map((option, index) => (
+        <Fragment>
+          <input
+            class="toggle-input"
+            id={`${name}-${index}`}
+            type="radio"
+            name={name}
+            value={option.value}
+            checked={option.value === value}
+            data-preset-for={option.presetFor}
+          />
+          <label
+            class:list={["toggle-option", `rounded-${size}`]}
+            for={`${name}-${index}`}
+            title={option.title ?? option.label}
+          >
+            {option.label}
+          </label>
+        </Fragment>
+      ))
+    }
+  </div>
+</fieldset>
+<style>
+  .toggle-field {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .toggle {
+    /* --toggle-count comes from the markup; --toggle-index is picked by the ladder below. */
+    --toggle-count: 2;
+    --toggle-index: 0;
+    --toggle-pad: 3px;
+
+    position: relative;
+
+    display: inline-grid;
+
+    /* Equal slots, so one translate step lands on the next option no matter how the
+       labels are worded. */
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+
+    max-width: 100%;
+    padding: var(--toggle-pad);
+    border: 1px solid var(--color-toggle-border);
+
+    background: var(--color-toggle-background);
+  }
+
+  .toggle-block {
+    display: grid;
+    width: 100%;
+  }
+
+  .toggle::before {
+    content: "";
+
+    position: absolute;
+    z-index: 0;
+    inset-block: var(--toggle-pad);
+    inset-inline-start: var(--toggle-pad);
+    transform: translateX(calc(var(--toggle-index) * 100%));
+
+    width: calc((100% - var(--toggle-pad) * 2) / var(--toggle-count));
+
+    background: var(--color-toggle-thumb);
+
+    transition:
+      transform 0.18s ease,
+      opacity 0.18s ease;
+  }
+
+  /* Presets un-check themselves when the slider moves off a named stop, and a thumb parked
+     under an option nobody chose would claim otherwise. */
+  .toggle:not(:has(.toggle-input:checked))::before {
+    opacity: 0;
+  }
+
+  /* Set by `_lib/generator.ts` while the checked stop is following a slider rather than a
+     press: the thumb appears and disappears where it belongs instead of sliding in and out. */
+  .toggle[data-instant="true"]::before {
+    transition: none;
+  }
+
+  .toggle-input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .toggle-option {
+    cursor: pointer;
+
+    position: relative;
+    z-index: 1;
+
+    overflow: hidden;
+
+    min-width: 0;
+    padding: 0.2rem;
+
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-toggle-text);
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .toggle-m .toggle-option {
+    padding-block: 0.4rem;
+    padding-inline: 0.9rem;
+    font-size: 0.92rem;
+  }
+
+  .toggle:has(.toggle-input:focus-visible) {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: 2px;
+  }
+
+  /* Which slot the thumb sits in, and which label it is sitting under. `nth-of-type`
+     counts inputs among inputs and labels among labels, so the two stay in step. Six is
+     the widest group on the page (the shape presets). */
+  .toggle:has(.toggle-input:nth-of-type(2):checked) {
+    --toggle-index: 1;
+  }
+
+  .toggle:has(.toggle-input:nth-of-type(3):checked) {
+    --toggle-index: 2;
+  }
+
+  .toggle:has(.toggle-input:nth-of-type(4):checked) {
+    --toggle-index: 3;
+  }
+
+  .toggle:has(.toggle-input:nth-of-type(5):checked) {
+    --toggle-index: 4;
+  }
+
+  .toggle:has(.toggle-input:nth-of-type(6):checked) {
+    --toggle-index: 5;
+  }
+
+  .toggle:has(.toggle-input:nth-of-type(1):checked) .toggle-option:nth-of-type(1),
+  .toggle:has(.toggle-input:nth-of-type(2):checked) .toggle-option:nth-of-type(2),
+  .toggle:has(.toggle-input:nth-of-type(3):checked) .toggle-option:nth-of-type(3),
+  .toggle:has(.toggle-input:nth-of-type(4):checked) .toggle-option:nth-of-type(4),
+  .toggle:has(.toggle-input:nth-of-type(5):checked) .toggle-option:nth-of-type(5),
+  .toggle:has(.toggle-input:nth-of-type(6):checked) .toggle-option:nth-of-type(6) {
+    color: var(--color-toggle-text-on-thumb);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toggle::before {
+      transition: none;
+    }
+  }
+
+  /* Passed in by `corner-fields.astro`; lands on the fieldset above. */
+  .preset-group {
+    margin-block-end: 0.4rem;
+  }
+</style>

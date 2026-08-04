@@ -1,0 +1,145 @@
+---
+import { DIMENSIONS } from "../_lib/controls";
+
+import SliderField from "./slider-field.astro";
+---
+
+<details class="root">
+  <summary class="summary rounded-xs"
+    >Size and text <span class="arrow">→</span></summary
+  >
+  <div class="card-properties-content">
+    <div class="field">
+      <div class="text-field-header">
+        <label class="field-label" for="preview-text">Preview text</label>
+        <button class="clear-text" type="button" data-clear-text>Clear</button>
+      </div>
+      <textarea
+        class="text-input rounded-xs textarea"
+        id="preview-text"
+        name="text"
+        rows="2"
+        >{
+          "The corner-shape property is used to modify the shape of rounded corners created by the border-radius property and its associated longhands"
+        }</textarea
+      >
+    </div>
+
+    <div class="dimension-grid">
+      {
+        DIMENSIONS.map((dimension) => (
+          <SliderField
+            name={dimension.name}
+            label={dimension.label}
+            min={dimension.min}
+            max={dimension.max}
+            step={dimension.step}
+            value={dimension.value}
+            unit={dimension.unit}
+          />
+        ))
+      }
+    </div>
+  </div>
+</details>
+
+<script>
+  // The form's own `input` listener owns every re-render, so clearing just empties the
+  // field and announces the change the same way typing would.
+  document.querySelector("[data-clear-text]")!.addEventListener("click", () => {
+    const textarea =
+      document.querySelector<HTMLTextAreaElement>("#preview-text")!;
+    textarea.value = "";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    textarea.focus();
+  });
+</script>
+
+<style>
+  .root {
+    &::details-content {
+      block-size: 0;
+      transition:
+        block-size 0.2s linear,
+        content-visibility 0.2s linear;
+      transition-behavior: allow-discrete;
+    }
+
+    &[open] .arrow {
+      transform: rotate(45deg);
+    }
+
+    &[open]::before {
+      width: 100%;
+    }
+
+    &[open]::details-content {
+      block-size: auto;
+    }
+  }
+  .summary {
+    cursor: pointer;
+
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+
+    width: fit-content;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    &::marker {
+      content: "";
+    }
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-top: -1px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    transition: transform 0.2s linear;
+  }
+
+  .card-properties-content {
+    padding-top: 1rem;
+    background: var(--color-page-background);
+  }
+
+  .text-field-header {
+    display: flex;
+    gap: 0.8rem;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .clear-text {
+    cursor: pointer;
+
+    margin-block-end: 0.4rem;
+    margin-inline-end: 0.2rem;
+    padding: 0;
+    border: 0;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-form-label);
+
+    background: none;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
+
+  .textarea {
+    padding: 0.6rem 0.8rem;
+  }
+  .dimension-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-block-start: 2.2rem;
+  }
+</style>

@@ -1,0 +1,39 @@
+:root {
+  --background-dots:
+    radial-gradient(circle at center, var(--color-dot) 0.8px, var(--color-transparent) 0.6px) 0 0 /
+      0.5rem 0.5rem,
+    var(--color-transparent);
+
+  /* Live state, not design tokens. Colours are the only thing this subproject keeps in a
+     custom property by choice; everything below is here because `_lib/generator.ts`
+     rewrites it on `documentElement.style` on every input event, and these values are
+     only the starting position the page is server-rendered in.
+
+     --size          share of the preview frame the card fills, 0.1 to 1
+     --ratio         card width divided by card height
+     --p             card padding as a percentage — resolved against the frame, so
+                     `.preview-card` scales it back down to the card itself
+     --fs            card font size, in rem
+     --r-tl/tr/br/bl per-corner border-radius of the enhanced tier
+     --fb-r-*        per-corner border-radius of the plain fallback tier, one per corner
+     --shape-*       per-corner `corner-shape` value: a keyword or `superellipse()`
+     --preview-clip  the exact fallback's outline as a clip-path, or `none` when the
+                     shape needs no path (all-round, all-square) */
+  --size: 0.6;
+  --ratio: 1;
+  --p: 10%;
+  --fs: 1rem;
+  --r-tl: 1rem;
+  --r-tr: 1rem;
+  --r-br: 1rem;
+  --r-bl: 1rem;
+  --fb-r-tl: 0.583rem;
+  --fb-r-tr: 0.583rem;
+  --fb-r-br: 0.583rem;
+  --fb-r-bl: 0.583rem;
+  --shape-tl: squircle;
+  --shape-tr: squircle;
+  --shape-br: squircle;
+  --shape-bl: squircle;
+  --preview-clip: none;
+}

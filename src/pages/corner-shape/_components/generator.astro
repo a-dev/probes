@@ -1,0 +1,34 @@
+---
+import OutputSection from "./output-section.astro";
+import ShapeSettings from "./shape-settings.astro";
+import Stage from "./stage.astro";
+
+// One form holds the whole tool: the preview, every control, and the CSS it emits, so
+// `_lib/generator.ts` can serialise it on every input event instead of reading controls
+// one by one. The DOM stays the single source of truth.
+---
+
+<script>
+  import "../_lib/generator";
+</script>
+<form id="generator-form" class="generator-form" data-mode="all">
+  <div class="root">
+    <Stage />
+    <ShapeSettings />
+  </div>
+
+  <OutputSection />
+</form>
+<style>
+  .root {
+    display: grid;
+    gap: 1.8rem;
+    align-items: start;
+  }
+
+  @media (width >= 54rem) {
+    .root {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

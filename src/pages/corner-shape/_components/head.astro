@@ -1,0 +1,229 @@
+<header class="page-head">
+  <div>
+    <div class="eyebrow">CSS tool</div>
+    <h1 class="page-title">Corner-shape generator</h1>
+  </div>
+  <p class="page-intro">
+    Adjust the sliders until you're happy with how the corners look, then copy
+    the CSS. Two fallback options: default{" "}
+    <code class="code code-no-wrap">border-radius</code> recomputed for equivalent
+    corner area (different numbers, same look), or exact <code
+      class="code code-no-wrap">clip-path</code
+    > curve tracing.
+  </p>
+  <details class="about">
+    <summary class="about-summary rounded-xs"
+      >In depth<span class="about-summary-arrow">→</span></summary
+    >
+    <div class="about-content">
+      <p class="about-paragraph">
+        The{" "}
+        <a
+          class="about-link"
+          href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/corner-shape"
+          target="_blank"><code class="code">corner-shape</code></a
+        > property specifies the curve applied within the corner region defined by{
+          " "
+        }
+        <code class="code code-no-wrap">border-radius</code>. The value inside{
+          " "
+        }
+        <code class="code code-no-wrap">superellipse()</code> acts as an exponent
+        (k = 2<sup>s</sup>): <strong>0</strong> produces a straight bevel, <strong
+          >1</strong
+        > gives you a regular circular curve, <strong>2</strong> matches Apple's iOS
+        squircle, and negative values make the corner curve inward rather than outward.
+        The scale runs out at both ends: below <strong>-3</strong> the spec's <em
+          >-infinity</em
+        > takes over as <code class="code">notch,</code> above <strong>5</strong
+        > its <em>infinity</em> takes over as <code class="code">square</code>.
+        Every step doubles <strong>k</strong>, and the curve flattens so fast
+        toward straight lines that cranking the exponent higher barely moves it
+        (we're talking less than a pixel of difference).
+      </p>
+      <p class="about-paragraph">
+        If the newer syntax isn't supported, you can fall back in one of two
+        ways. By default you fall back to good old <code
+          class="code code-no-wrap">border-radius</code
+        >, which plays nicely with borders, outlines, and shadows, but it can
+        only round corners outward (no concave curves). The <strong
+          >exact fallback</strong
+        >{" "}
+        uses <code class="code code-no-wrap">clip-path</code> to trace the actual
+        curve. It reproduces the shape exactly, but then cuts off anything rendered
+        outside it, including your shadows and outlines.
+      </p>
+      <p class="about-paragraph">
+        For outward-curving corners, the generator calculates a <code
+          class="code">border-radius</code
+        >{" "}
+        that removes the same amount of corner area as the superellipse would, so
+        both versions look visually equivalent. Concave curves can't be replicated
+        with <code class="code">border-radius</code>, so the generator just
+        keeps whatever radius you typed and warns you about it. When you're in
+        exact mode with a custom curve, the generator pieces it together from
+        Bézier segments, splitting them over and over until the fit is within
+        0.25% of the radius. That precision holds for every shape you can dial
+        up, all the way to <code class="code">superellipse(-3)</code>.
+      </p>
+    </div>
+  </details>
+</header>
+
+<style>
+  .page-head {
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 4rem;
+  }
+
+  .page-title {
+    margin-block-start: 6px;
+    margin-inline-start: calc(min(0.5vw, 6px) * -1);
+
+    font-size: clamp(2.4rem, 6.6vw, 5.4rem);
+    font-weight: 800;
+    line-height: 0.9;
+    color: var(--color-blue-energy-500);
+    text-shadow: 0 -7px 0
+      color-mix(var(--color-blue-energy-100) clamp(10%, calc((100vw / 20px) * 1%), 80%), transparent);
+    letter-spacing: -0.02em;
+  }
+
+  .page-intro {
+    font-size: 1.22rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+    text-wrap: balance;
+
+    & .code {
+      font-weight: 700;
+    }
+  }
+
+  .about-summary-arrow {
+    display: inline-block;
+    margin-top: -1px;
+    font-weight: 800;
+    transition: transform 0.4s ease-in;
+  }
+
+  .about {
+    isolation: isolate;
+    position: relative;
+
+    overflow: hidden;
+
+    margin-top: 0.8rem;
+    padding-block: 0.6rem;
+    padding-inline: 1.8rem;
+
+    &::before {
+      content: "";
+
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+
+      display: block;
+
+      width: 6px;
+      height: 100%;
+      border-right: 3px solid var(--color-info-border);
+      border-left: 3px solid var(--color-info-border);
+
+      background: color-mix(var(--color-info-surface) 50%, transparent);
+
+      transition: width 0.8s cubic-bezier(0.348, 0.756, 0.771, 0.923);
+    }
+
+    &::details-content {
+      block-size: 0;
+      transition:
+        block-size 0.4s cubic-bezier(0.348, 0.756, 0.771, 0.923),
+        content-visibility 0.4s linear;
+      transition-behavior: allow-discrete;
+    }
+
+    &[open] .about-summary-arrow {
+      transform: rotate(45deg);
+    }
+
+    &[open]::before {
+      width: 100%;
+    }
+
+    &[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  .about-summary {
+    cursor: pointer;
+
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+
+    width: fit-content;
+
+    font-size: 1.1rem;
+
+    &::marker {
+      content: "";
+    }
+  }
+
+  .about-content {
+    container-type: inline-size;
+    column-width: 36ch;
+    column-fill: balance;
+    column-gap: 2.8rem;
+
+    padding-block: 0.8rem 1.2rem;
+
+    font-size: 1.1rem;
+    font-weight: 400;
+    line-height: 1.44;
+    color: var(--color-text-primary);
+
+    a,
+    a .code {
+      transition: all 0.2s ease-in;
+    }
+
+    & a:has(.code) {
+      text-decoration-color: var(--color-code-text);
+      text-decoration-thickness: 2.5px;
+      text-underline-offset: 0.16em;
+    }
+
+    & a:has(.code):has(:hover) {
+      text-decoration-color: var(--color-blue-energy-400);
+    }
+
+    & a:hover .code {
+      color: var(--color-blue-energy-400);
+    }
+
+    strong {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .about-paragraph {
+    orphans: 2;
+    break-inside: auto;
+    margin-bottom: 0.44rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .about-link {
+    color: var(--color-accent);
+  }
+</style>

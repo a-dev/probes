@@ -1,0 +1,115 @@
+---
+import { CORNER_LABELS } from "../_lib/controls";
+import CardProperties from "./card-properties.astro";
+import CornerFields from "./corner-fields.astro";
+import Toggle from "./toggle.astro";
+
+// The corners. Both sets of controls stay in the markup and the mode switch shows one of
+// them, so the form always serialises a complete answer for whichever mode is active.
+---
+
+<section aria-labelledby="controls-title">
+  <div class="header">
+    <div class="eyebrow" id="controls-title">Controls</div>
+    <CardProperties />
+  </div>
+  <Toggle
+    class="mode-toggle"
+    name="mode"
+    legend="Corner shapes"
+    size="m"
+    value="all"
+    options={[
+      { label: "All", value: "all" },
+      { label: "Individual", value: "individual" },
+    ]}
+  />
+
+  <div class="corner-group all-controls">
+    <CornerFields target="all" />
+  </div>
+
+  <div class="corner-grid individual-controls">
+    {
+      CORNER_LABELS.map(({ id, label }) => (
+        <fieldset class="corner-group">
+          <legend class="field-label corner-group-legend">{label}</legend>
+          <CornerFields target={id} label={label} />
+        </fieldset>
+      ))
+    }
+  </div>
+</section>
+<style>
+  .header {
+    padding-block-end: 2.75rem;
+    position: relative;
+  }
+
+  /* Same dotted texture as `.preview-wrapper`, as a band under the header. The height is
+     a whole number of 0.5rem tiles so the dots are never sliced mid-row. */
+  .header:after {
+    position: absolute;
+    bottom: 0;
+    content: "";
+    display: block;
+    height: 1rem;
+    width: 100%;
+    background: var(--background-dots);
+  }
+
+  :global(.mode-toggle) {
+    margin-block: 1.6rem 1.8rem;
+    background: var(--color-page-background);
+  }
+
+  .corner-group {
+    display: grid;
+    gap: 1.8rem;
+
+    min-width: 0;
+    padding: 0.6rem 0;
+    border: 0;
+
+    background: var(--color-page-background);
+  }
+
+  .individual-controls .corner-group {
+    margin-block-start: 1rem;
+  }
+
+  .corner-grid {
+    display: none;
+    gap: 1.8rem;
+    background: var(--color-page-background);
+  }
+
+  :global(.generator-form[data-mode="individual"]) .all-controls {
+    display: none;
+  }
+
+  :global(.generator-form[data-mode="individual"]) .individual-controls {
+    display: grid;
+  }
+
+  /* The rule that used to be the fieldset's border-top now lives beside the label: the
+     text takes what it needs and the dotted band runs out to the right edge. */
+  .corner-group-legend {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    width: 100%;
+
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: 1.1rem;
+    color: var(--color-code-text);
+    text-transform: lowercase;
+  }
+
+  .corner-group-legend:after {
+    content: "";
+    flex: 1;
+    height: 1rem;
+    background: var(--background-dots);
+  }
+</style>
