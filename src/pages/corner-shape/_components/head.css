@@ -43,8 +43,8 @@
   overflow: hidden;
 
   margin-top: 0.8rem;
-  padding-block: 0.4rem;
-  padding-inline: 1rem;
+  padding-block: 0.6rem;
+  padding-inline: 1.8rem;
 
   &::before {
     content: "";
@@ -107,14 +107,14 @@
   container-type: inline-size;
   column-width: 36ch;
   column-fill: balance;
-  column-gap: 4.4rem;
+  column-gap: 2.8rem;
 
   padding-block: 0.8rem 1.2rem;
 
   font-size: 1.1rem;
   font-weight: 400;
   line-height: 1.44;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 
   a,
   a .code {

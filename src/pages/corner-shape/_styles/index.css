@@ -81,7 +81,7 @@ html {
   .text-input {
     min-width: 0;
     padding: 0.32rem 0.5rem;
-    border: 0;
+    border: 1px solid var(--color-input-border);
 
     font-size: 1rem;
     color: inherit;
@@ -105,8 +105,59 @@ html {
     margin-bottom: -0.4rem;
   }
 
+  /* A hairline track and a ring for a thumb; the ring fills in while it is held. Only
+     Firefox ships a progress pseudo-element, so the played half of the track is a
+     background gradient instead, sized by `--progress` (0–1, set in `_lib/generator.ts`)
+     against the distance the thumb's centre actually travels. */
   .range-input {
+    --track-height: 0.25rem;
+    --thumb-size: 1.1rem;
+
+    cursor: pointer;
+
     width: 100%;
+    height: var(--thumb-size);
+
+    appearance: none;
+    background:
+      linear-gradient(var(--color-range-accent) 0 0) no-repeat 0 50% /
+        calc(var(--progress, 0) * (100% - var(--thumb-size)) + var(--thumb-size) / 2)
+        var(--track-height),
+      linear-gradient(var(--color-range-track) 0 0) no-repeat 0 50% / 100% var(--track-height);
+  }
+
+  .range-input::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border: 0.18rem solid var(--color-range-accent);
+    border-radius: 50%;
+
+    appearance: none;
+    background: var(--color-page-background);
+    outline: 0.28rem solid var(--color-page-background);
+
+    transition: background 0.1s ease-in;
+  }
+
+  .range-input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border: 0.18rem solid var(--color-range-accent);
+    border-radius: 50%;
+
+    background: var(--color-page-background);
+
+    transition: background 0.1s ease-in;
+  }
+
+  .range-input:is(:hover, :active, :focus-visible)::-webkit-slider-thumb {
+    background: var(--color-range-accent);
+  }
+
+  .range-input:is(:hover, :active, :focus-visible)::-moz-range-thumb {
+    background: var(--color-range-accent);
   }
 
   .button {
@@ -120,6 +171,10 @@ html {
     color: var(--color-surface);
 
     background: var(--color-accent);
+  }
+
+  .range-input ~ .text-input {
+    margin-top: -1px;
   }
 
   .text-input:focus-visible,

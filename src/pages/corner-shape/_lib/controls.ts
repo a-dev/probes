@@ -70,4 +70,7 @@ export const DEFAULT_RADIUS = "1";
 
 // Shape and radius take the same two ranges everywhere they appear.
 export const SHAPE_RANGE = { min: -3, max: 5, step: 0.1 } as const;
-export const RADIUS_RANGE = { min: 0, max: 8, step: 0.05 } as const;
+// The radius maximum here is only what the server can guess before anything is laid out.
+// The real ceiling is half the card's shorter side — a circle — and `_lib/generator.ts`
+// rewrites it on every render, so this value survives about one frame.
+export const RADIUS_RANGE = { min: 0, max: 18, step: 0.01 } as const;

@@ -13,25 +13,39 @@ import "./output-section.css";
   <pre id="css-output" class="css-output" tabindex="0"></pre>
   <div class="output-controls">
     <div>
+      {
+        /* The two labels are stacked on top of each other so the swap can cross-fade;
+      `visibility` keeps the inactive one out of the accessible name. */
+      }
       <button
         id="copy-css"
         class="button copy-css-button rounded-m"
-        type="button">Copy CSS</button
+        type="button"
+        aria-live="polite"
       >
-      <p id="copy-status" class="copy-status" aria-live="polite"></p>
+        <span class="copy-css-label copy-css-label-idle">Copy CSS</span>
+        <span class="copy-css-label copy-css-label-copied">Copied!</span>
+      </button>
     </div>
     <div class="output-options">
+      {
+        /* Styled after moderncss.dev's pure-CSS checkbox: the native input keeps all of
+        its behaviour, `appearance: none` takes away only the paint, and a `::before`
+        clipped into a tick draws the checked state. Everything sizes in `em`, so the
+        box grows with the label's font-size and nothing needs to be re-measured. */
+      }
       <label class="exact-toggle">
-        <input
-          class="exact-toggle-input"
-          type="checkbox"
-          name="exact"
-          role="switch"
-        /> Exact fallback
+        <input class="exact-toggle-input" type="checkbox" name="exact" />
+        <span>Exact fallback</span>
       </label>
       <label class="selector-field">
         <span class="field-label">Selector</span>
-        <input class="text-input" name="selector" type="text" value=".card" />
+        <input
+          class="text-input rounded-xs class-name-input"
+          name="selector"
+          type="text"
+          value=".card"
+        />
       </label>
       <Toggle
         name="unit"

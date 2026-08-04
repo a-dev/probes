@@ -36,7 +36,7 @@
 
 .output-options {
   display: grid;
-  gap: 0.8rem;
+  gap: 1.8rem;
 }
 
 .selector-field {
@@ -46,34 +46,121 @@
 }
 
 .copy-css-button {
+  display: grid;
   width: 100%;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
-.copy-status {
-  min-height: 1.5rem;
-  padding-top: 0.35rem;
+/* Both labels share one grid cell; only one is visible at a time. */
+.copy-css-label {
+  grid-area: 1 / 1;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0.25s;
+}
 
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--color-accent);
+.copy-css-label-copied,
+.copy-css-button[data-copied] .copy-css-label-idle {
+  transform: translateY(-0.35rem);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.copy-css-button[data-copied] {
+  background: var(--color-blue-energy-600);
+}
+
+.copy-css-button[data-copied] .copy-css-label-copied {
+  transform: none;
+  visibility: visible;
+  opacity: 1;
 }
 
 .unit-toggle .toggle-option {
   padding-inline: 0.8rem;
 }
 
+/* `1em auto` is the whole layout: the box occupies exactly one em-width column, the
+   label takes the rest, and both stay on the text baseline as the font-size changes. */
 .exact-toggle {
-  display: flex;
-  gap: 0.4rem;
+  cursor: pointer;
+
+  display: grid;
+  grid-template-columns: 1em auto;
+  gap: 0.5em;
   align-items: center;
+
+  margin-inline-start: 0.1rem;
+
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--color-accent);
+  }
 }
 
-.exact-toggle:has(.exact-toggle-input:checked) {
-  /* border-color: var(--color-accent); */
+.exact-toggle-input {
+  display: grid;
+  place-content: center;
 
-  /* color: var(--color-accent); */
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0;
+  border: 0.12em solid currentcolor;
+  border-radius: 0.22em;
 
-  /* background: var(--color-accent-soft); */
+  font: inherit;
+  color: currentcolor;
+
+  appearance: none;
+  background-color: var(--color-control-bg);
+
+  transition:
+    background-color 120ms ease-in-out,
+    border-color 120ms ease-in-out;
+}
+
+.exact-toggle-input::before {
+  content: "";
+
+  transform-origin: left bottom;
+  transform: scale(0);
+
+  width: 0.7em;
+  height: 0.7em;
+
+  background-color: var(--color-card-text);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+
+  transition: transform 120ms ease-in-out;
+}
+
+.exact-toggle-input:checked {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+}
+
+.exact-toggle-input:checked::before {
+  transform: scale(1);
+}
+
+.exact-toggle-input:focus-visible {
+  outline: max(2px, 0.12em) solid var(--color-focus);
+  outline-offset: max(2px, 0.12em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exact-toggle-input::before {
+    transition-duration: 0s;
+  }
 }
 
 .css-output {
@@ -141,4 +228,8 @@
     border-right: 0;
     border-bottom: 1px solid var(--color-divider);
   }
+}
+
+.class-name-input {
+  border: 1px solid var(--color-input-border);
 }

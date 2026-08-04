@@ -5,14 +5,25 @@ import SliderField from "./slider-field.astro";
 ---
 
 <details class="root">
-  <summary class="summary">Size and text <span class="arrow">→</span></summary>
+  <summary class="summary rounded-xs"
+    >Size and text <span class="arrow">→</span></summary
+  >
   <div class="card-properties-content">
-    <label class="field">
-      <span class="field-label">Preview text</span>
-      <textarea class="text-input rounded-xs" name="text" rows="3"
-        >A little corner of the web.</textarea
+    <div class="field">
+      <div class="text-field-header">
+        <label class="field-label" for="preview-text">Preview text</label>
+        <button class="clear-text" type="button" data-clear-text>Clear</button>
+      </div>
+      <textarea
+        class="text-input rounded-xs textarea"
+        id="preview-text"
+        name="text"
+        rows="2"
+        >{
+          "The corner-shape property is used to modify the shape of rounded corners created by the border-radius property and its associated longhands"
+        }</textarea
       >
-    </label>
+    </div>
 
     <div class="dimension-grid">
       {
@@ -31,6 +42,19 @@ import SliderField from "./slider-field.astro";
     </div>
   </div>
 </details>
+
+<script>
+  // The form's own `input` listener owns every re-render, so clearing just empties the
+  // field and announces the change the same way typing would.
+  document.querySelector("[data-clear-text]")!.addEventListener("click", () => {
+    const textarea =
+      document.querySelector<HTMLTextAreaElement>("#preview-text")!;
+    textarea.value = "";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    textarea.focus();
+  });
+</script>
+
 <style>
   .root {
     &::details-content {
@@ -83,9 +107,39 @@ import SliderField from "./slider-field.astro";
     background: var(--color-page-background);
   }
 
+  .text-field-header {
+    display: flex;
+    gap: 0.8rem;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .clear-text {
+    cursor: pointer;
+
+    margin-block-end: 0.4rem;
+    margin-inline-end: 0.2rem;
+    padding: 0;
+    border: 0;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-form-label);
+
+    background: none;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
+
+  .textarea {
+    padding: 0.6rem 0.8rem;
+  }
   .dimension-grid {
     display: grid;
     gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    margin-block-start: 2.2rem;
   }
 </style>

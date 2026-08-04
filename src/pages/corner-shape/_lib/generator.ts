@@ -16,7 +16,7 @@ const stage = document.querySelector<HTMLElement>("#stage")!;
 const card = document.querySelector<HTMLElement>("#preview-card")!;
 const readout = document.querySelector<HTMLElement>("#value-readout")!;
 const output = document.querySelector<HTMLElement>("#css-output")!;
-const copyStatus = document.querySelector<HTMLElement>("#copy-status")!;
+const copyButton = document.querySelector<HTMLButtonElement>("#copy-css")!;
 
 function number(data: Record<string, FormDataEntryValue>, name: string): number {
   return Number(data[name]);
@@ -54,6 +54,32 @@ function cardSize(): { width: number; height: number } {
   return { width: box.width / rem, height: box.height / rem };
 }
 
+// Past half the card's shorter side a radius has nothing left to bend: the two arcs
+// meeting on that side already touch, and everything beyond is the browser scaling them
+// back down for you. That ceiling is a property of the laid-out card, not a constant, so
+// it has to be re-hung on the sliders every time size or ratio moves — otherwise the top
+// of the track is dead travel on a small card and unreachable on a large one.
+function limitRadii(
+  data: Record<string, FormDataEntryValue>,
+  size: { width: number; height: number },
+): void {
+  const max = Math.min(size.width, size.height) / 2;
+  const maxAttribute = max.toFixed(2);
+  for (const hidden of form.querySelectorAll<HTMLInputElement>('[data-value-for^="radius-"]')) {
+    const name = hidden.dataset.valueFor!;
+    const clamped = Math.min(Number(hidden.value), max);
+    const shrank = clamped !== Number(hidden.value);
+    if (shrank) {
+      hidden.value = String(clamped);
+      data[name] = String(clamped);
+    }
+    for (const peer of form.querySelectorAll<HTMLInputElement>(`[data-bind="${name}"]`)) {
+      peer.max = maxAttribute;
+      if (shrank) peer.value = String(clamped);
+    }
+  }
+}
+
 function makeState(
   data: Record<string, FormDataEntryValue>,
   size: { width: number; height: number },
@@ -74,9 +100,22 @@ function makeState(
   };
 }
 
+// The played half of a slider's track is drawn in CSS from `--progress`, because no
+// pseudo-element for it exists outside Firefox. This is the only thing that knows the ratio.
+function paintRanges(): void {
+  for (const input of form.querySelectorAll<HTMLInputElement>(".range-input")) {
+    const min = Number(input.min);
+    const span = Number(input.max) - min;
+    const progress = span > 0 ? (input.valueAsNumber - min) / span : 0;
+    input.style.setProperty("--progress", progress.toFixed(4));
+  }
+}
+
 function render(data: Record<string, FormDataEntryValue>): void {
   frameCard(data);
-  const state = makeState(data, cardSize());
+  const size = cardSize();
+  limitRadii(data, size);
+  const state = makeState(data, size);
   const individual = data.mode === "individual";
   const style = document.documentElement.style;
   for (const corner of CORNERS) {
@@ -88,6 +127,7 @@ function render(data: Record<string, FormDataEntryValue>): void {
     const value = shape(data, input.dataset.bind!);
     input.setAttribute("aria-valuetext", shapeValue(value));
   }
+  paintRanges();
   const clip = exactClipPath({ ...state, unit: "rem" });
   style.setProperty("--preview-clip", clip ?? "none");
   stage.dataset.preview = text(data.preview);
@@ -158,10 +198,13 @@ form.addEventListener("input", (event) => {
   render(data);
 });
 
-document.querySelector("#copy-css")!.addEventListener("click", async () => {
+let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+copyButton.addEventListener("click", async () => {
   await navigator.clipboard.writeText(output.textContent ?? "");
-  copyStatus.textContent = "Copied.";
-  setTimeout(() => (copyStatus.textContent = ""), 2000);
+  copyButton.dataset.copied = "";
+  clearTimeout(copiedTimer);
+  copiedTimer = setTimeout(() => delete copyButton.dataset.copied, 2000);
 });
 
 // A frame that grows with the viewport moves the point where the radii start clamping,
