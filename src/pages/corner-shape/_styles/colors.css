@@ -62,11 +62,6 @@
   --color-dusty-rose-950: oklch(16.66% 0.034 14.48deg);
 }
 
-/* One family per job, so a colour tells you what it is before you read the label:
-   almond cream is every surface and every neutral text tone, blue energy is
-   anything you can operate plus the card it draws, hunter green means code, and
-   dusty rose is reserved for the few places that have to interrupt you. Steps
-   track the lightness ordering the page had before, so contrast stays put. */
 /* stylelint-disable-next-line no-duplicate-selectors -- kept apart from the palette above */
 :root {
   --color-text-primary: var(--color-sunflower-gold-950);
@@ -81,6 +76,10 @@
   --color-group-border: var(--color-dusty-rose-100);
   --color-card-start: var(--color-blue-energy-400);
   --color-card-end: var(--color-blue-energy-600);
+  --color-dot: var(--color-sunflower-gold-300);
+  --color-outline-focus: color-mix(var(--color-sunflower-gold-600) 80%, transparent);
+  --color-input-background: color-mix(var(--color-sunflower-gold-50) 90%, transparent);
+  --color-form-label: color-mix(var(--color-sunflower-gold-900) 60%, transparent);
 
   /* toggle */
   --color-toggle-background: var(--color-blue-energy-50);
@@ -91,14 +90,13 @@
   --color-toggle-focus: var(--color-blue-energy-900);
 
   /* 1 */
-  --color-page: var(--color-sunflower-gold-20);
+  --color-page-background: var(--color-sunflower-gold-20);
   --color-muted: var(--color-almond-cream-700);
   --color-warning-border: var(--color-dusty-rose-500);
   --color-warning-text: var(--color-dusty-rose-700);
   --color-border: var(--color-almond-cream-200);
   --color-divider: var(--color-almond-cream-100);
   --color-surface: var(--color-sunflower-gold-50);
-  --color-dot: var(--color-almond-cream-300);
   --color-card-text: var(--color-sunflower-gold-50);
 
   /* Two jobs that pull opposite ways: the ring has to stand off the page, the
@@ -117,37 +115,4 @@
   --color-code-text: var(--color-hunter-green-600);
   --color-code-surface: var(--color-hunter-green-50);
   --color-code-border: var(--color-hunter-green-100);
-
-  /* Live state, not design tokens. Colours are the only thing this subproject keeps in a
-     custom property by choice; everything below is here because `_lib/generator.ts`
-     rewrites it on `documentElement.style` on every input event, and these values are
-     only the starting position the page is server-rendered in.
-
-     --size          share of the preview frame the card fills, 0.1 to 1
-     --ratio         card width divided by card height
-     --p             card padding as a percentage — resolved against the frame, so
-                     `.preview-card` scales it back down to the card itself
-     --fs            card font size, in rem
-     --r-tl/tr/br/bl per-corner border-radius of the enhanced tier
-     --fb-r-*        per-corner border-radius of the plain fallback tier, one per corner
-     --shape-*       per-corner `corner-shape` value: a keyword or `superellipse()`
-     --preview-clip  the exact fallback's outline as a clip-path, or `none` when the
-                     shape needs no path (all-round, all-square) */
-  --size: 0.6;
-  --ratio: 1;
-  --p: 10%;
-  --fs: 1rem;
-  --r-tl: 1rem;
-  --r-tr: 1rem;
-  --r-br: 1rem;
-  --r-bl: 1rem;
-  --fb-r-tl: 0.583rem;
-  --fb-r-tr: 0.583rem;
-  --fb-r-br: 0.583rem;
-  --fb-r-bl: 0.583rem;
-  --shape-tl: squircle;
-  --shape-tr: squircle;
-  --shape-br: squircle;
-  --shape-bl: squircle;
-  --preview-clip: none;
 }

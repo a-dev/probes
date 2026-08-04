@@ -1,7 +1,8 @@
 @layer reset, ui;
 
+@import url("./colors.css");
 @import url("./vars.css");
-@import url("../../shared/styles/reset.css") layer(reset);
+@import url("../../../shared/styles/reset.css") layer(reset);
 
 html {
   min-width: 20rem;
@@ -11,7 +12,7 @@ html {
 
   color-scheme: light;
   accent-color: var(--color-accent);
-  background: var(--color-page);
+  background: var(--color-page-background);
 }
 
 @layer reset {
@@ -25,10 +26,15 @@ html {
    holds only its layout; anything two of them would otherwise copy lives here, unlayered
    rules in those files beating these by virtue of the cascade layer. */
 @layer ui {
+  *:focus-visible {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: 2px;
+  }
+
   .page {
     max-width: 83rem;
     margin-inline: auto;
-    padding: clamp(1.25rem, 4vw, 3rem) 1.5rem 4rem;
+    padding: clamp(1.25rem, 4vw, 3rem) 1.5rem 0;
   }
 
   .section-title {
@@ -64,30 +70,23 @@ html {
 
   .field-label {
     width: fit-content;
-    padding-block: 0.2rem 0.4rem;
-    padding-inline: 0.4rem;
+    margin-block-end: 0.4rem;
 
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--color-dusty-rose-300);
-    text-transform: uppercase;
+    color: var(--color-form-label);
   }
 
   .text-input {
     min-width: 0;
     padding: 0.32rem 0.5rem;
     border: 0;
-    border-bottom: 1px solid var(--color-group-border);
 
     font-size: 1rem;
     color: inherit;
 
-    background: var(--color-transparent);
-  }
-
-  .range-input {
-    width: 100%;
+    background: var(--color-input-background);
   }
 
   /* A slider and its typed value, side by side under one label. */
@@ -103,7 +102,11 @@ html {
   }
 
   .control-pair .field-label {
-    grid-column: 1 / -1;
+    margin-bottom: -0.4rem;
+  }
+
+  .range-input {
+    width: 100%;
   }
 
   .button {
@@ -123,7 +126,7 @@ html {
   .range-input:focus-visible,
   .button:focus-visible,
   .chip:has(:focus-visible) {
-    outline: 3px solid var(--color-focus);
+    outline: 2px solid var(--color-outline-focus);
     outline-offset: 2px;
   }
 
@@ -192,6 +195,37 @@ html {
       clip-path: none;
 
       corner-shape: superellipse(1.2);
+    }
+  }
+
+  .rounded-xs {
+    clip-path: shape(
+      from 0.8rem 0,
+      line to calc(100% - 0.8rem) 0,
+      curve to calc(100% - 0.185rem) 0.185rem with calc(100% - 0.468rem) 0 / calc(100% - 0.307rem)
+        0.063rem,
+      curve to 100% 0.8rem with calc(100% - 0.063rem) 0.307rem / 100% 0.468rem,
+      line to 100% calc(100% - 0.8rem),
+      curve to calc(100% - 0.185rem) calc(100% - 0.185rem) with 100% calc(100% - 0.468rem) /
+        calc(100% - 0.063rem) calc(100% - 0.307rem),
+      curve to calc(100% - 0.8rem) 100% with calc(100% - 0.307rem) calc(100% - 0.063rem) /
+        calc(100% - 0.468rem) 100%,
+      line to 0.8rem 100%,
+      curve to 0.185rem calc(100% - 0.185rem) with 0.468rem 100% / 0.307rem calc(100% - 0.063rem),
+      curve to 0 calc(100% - 0.8rem) with 0.063rem calc(100% - 0.307rem) / 0 calc(100% - 0.468rem),
+      line to 0 0.8rem,
+      curve to 0.185rem 0.185rem with 0 0.468rem / 0.063rem 0.307rem,
+      curve to 0.8rem 0 with 0.307rem 0.063rem / 0.468rem 0,
+      close
+    );
+  }
+
+  @supports (corner-shape: superellipse(1.4)) {
+    .rounded-xs {
+      border-radius: 0.8rem;
+      clip-path: none;
+
+      corner-shape: superellipse(1.4);
     }
   }
 }

@@ -9,7 +9,7 @@ import SliderField from "./slider-field.astro";
   <div class="card-properties-content">
     <label class="field">
       <span class="field-label">Preview text</span>
-      <textarea class="text-input" name="text" rows="3"
+      <textarea class="text-input rounded-xs" name="text" rows="3"
         >A little corner of the web.</textarea
       >
     </label>
@@ -33,7 +33,6 @@ import SliderField from "./slider-field.astro";
 </details>
 <style>
   .root {
-    overflow: hidden;
     &::details-content {
       block-size: 0;
       transition:
@@ -75,11 +74,13 @@ import SliderField from "./slider-field.astro";
     display: inline-block;
     margin-top: -1px;
     font-weight: 800;
+    font-size: 1.1rem;
     transition: transform 0.2s linear;
   }
 
   .card-properties-content {
     padding-top: 1rem;
+    background: var(--color-page-background);
   }
 
   .dimension-grid {

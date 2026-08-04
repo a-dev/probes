@@ -28,7 +28,7 @@ import Toggle from "./toggle.astro";
     ]}
   />
 
-  <div class="corner-controls all-controls">
+  <div class="corner-group all-controls">
     <CornerFields target="all" />
   </div>
 
@@ -48,8 +48,20 @@ import Toggle from "./toggle.astro";
   }
 
   .header {
-    padding-block-end: 2rem;
-    border-block-end: 1px solid var(--color-border);
+    padding-block-end: 2.75rem;
+    position: relative;
+  }
+
+  /* Same dotted texture as `.preview-wrapper`, as a band under the header. The height is
+     a whole number of 0.5rem tiles so the dots are never sliced mid-row. */
+  .header:after {
+    position: absolute;
+    bottom: 0;
+    content: "";
+    display: block;
+    height: 1rem;
+    width: 100%;
+    background: var(--background-dots);
   }
 
   .title {
@@ -59,7 +71,8 @@ import Toggle from "./toggle.astro";
   }
 
   :global(.mode-toggle) {
-    margin-block: 0.8rem 1.8rem;
+    margin-block: 1.6rem 1.8rem;
+    background: var(--color-page-background);
   }
 
   .header-corners {
@@ -68,15 +81,17 @@ import Toggle from "./toggle.astro";
     align-items: center;
     gap: 0.8rem;
   }
-  .corner-controls,
+
   .corner-group {
     display: grid;
-    gap: 0.8rem;
+    gap: 1.8rem;
+    background: var(--color-page-background);
   }
 
   .corner-grid {
     display: none;
     gap: 1.8rem;
+    background: var(--color-page-background);
   }
 
   /* Both sets of controls stay in the DOM and the mode switch shows one of them, so the
@@ -94,15 +109,26 @@ import Toggle from "./toggle.astro";
     min-width: 0;
     padding: 0.6rem 0;
     border: 0;
-    border-top: 5px solid var(--color-group-border);
   }
 
+  /* The rule that used to be the fieldset's border-top now lives beside the label: the
+     text takes what it needs and the dotted band runs out to the right edge. */
   .corner-group-legend {
-    padding-inline-end: 0.8rem;
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    width: 100%;
 
     font-family: var(--font-atkinson-mono), ui-monospace, monospace;
     font-size: 1.1rem;
     color: var(--color-code-text);
     text-transform: lowercase;
+  }
+
+  .corner-group-legend:after {
+    content: "";
+    flex: 1;
+    height: 1rem;
+    background: var(--background-dots);
   }
 </style>

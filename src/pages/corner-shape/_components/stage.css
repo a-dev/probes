@@ -85,10 +85,7 @@
   display: grid;
   place-items: center;
   padding: 1.4rem;
-  background:
-    radial-gradient(circle at center, var(--color-dot) 0.8px, var(--color-transparent) 0.6px) 0 0 /
-      0.5rem 0.5rem,
-    var(--color-transparent);
+  background: var(--background-dots);
 }
 
 .value-readout {

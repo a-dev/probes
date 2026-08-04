@@ -139,9 +139,13 @@ function selectPreset(target: HTMLInputElement): void {
   syncPair(numberInput);
 }
 
-function updatePresetStates(data: Record<string, FormDataEntryValue>): void {
+// A stop lighting up because the slider crossed it is not a move anyone made with the
+// toggle: the thumb would slide in from wherever it was parked and slide straight back out
+// as the next pixel of drag un-checks it. Only a press on the toggle itself gets the slide.
+function updatePresetStates(data: Record<string, FormDataEntryValue>, fromToggle: boolean): void {
   for (const preset of form.querySelectorAll<HTMLInputElement>("[data-preset-for]")) {
     preset.checked = text(data[preset.dataset.presetFor!]) === preset.value;
+    preset.closest<HTMLElement>(".toggle")!.dataset.instant = String(!fromToggle);
   }
 }
 
@@ -150,7 +154,7 @@ form.addEventListener("input", (event) => {
   selectPreset(target);
   syncPair(target);
   const data = Object.fromEntries(new FormData(form));
-  updatePresetStates(data);
+  updatePresetStates(data, target.matches("[data-preset-for]"));
   render(data);
 });
 

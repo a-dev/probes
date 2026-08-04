@@ -39,7 +39,7 @@ const isText = type === "text";
   <legend class="field-label"><slot>{label}</slot></legend>
   <input type="hidden" name={name} value={value} data-value-for={name} />
   <input
-    class="range-input"
+    class="range-input rounded-xs"
     type="range"
     min={min}
     max={max}
@@ -50,7 +50,7 @@ const isText = type === "text";
     aria-valuetext={ariaValueText}
   />
   <input
-    class="text-input"
+    class="text-input rounded-xs"
     type={type}
     inputmode={isText ? "decimal" : undefined}
     min={isText ? undefined : min}

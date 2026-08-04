@@ -1,7 +1,7 @@
 .page-head {
   display: grid;
   gap: 0.8rem;
-  margin-bottom: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 4rem;
 }
 
 .page-title {

@@ -6,7 +6,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.35fr);
   gap: 1.8rem;
 
-  margin-top: 2.8rem;
+  margin-top: 4rem;
   padding-block: 1.4rem;
 }
 
@@ -93,7 +93,6 @@
   color: var(--color-text-primary);
   tab-size: 2;
 
-  /* background: var(--color-transparent); var(--color-hunter-green-20) */
   background: radial-gradient(
     circle at 0% 50%,
     var(--color-hunter-green-20) 0%,
