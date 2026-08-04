@@ -1,3 +1,6 @@
+// The render pipeline. Every input event re-serialises the form and repaints from the
+// result, so the DOM stays the single source of truth.
+
 import { highlightElement } from "@speed-highlight/core";
 
 import {
@@ -10,205 +13,174 @@ import {
   type Corner,
   type GeneratorState,
 } from "./emit";
+import {
+  applyPreset,
+  form,
+  limitRadii,
+  markPresetTransition,
+  paintRangeProgress,
+  readValues,
+  shapeRanges,
+  syncField,
+  syncPresetChecks,
+  type Values,
+} from "./form";
 
-const form = document.querySelector<HTMLFormElement>("#generator-form")!;
+const root = document.documentElement;
 const stage = document.querySelector<HTMLElement>("#stage")!;
 const card = document.querySelector<HTMLElement>("#preview-card")!;
 const readout = document.querySelector<HTMLElement>("#value-readout")!;
 const output = document.querySelector<HTMLElement>("#css-output")!;
 const copyButton = document.querySelector<HTMLButtonElement>("#copy-css")!;
 
-function number(data: Record<string, FormDataEntryValue>, name: string): number {
-  return Number(data[name]);
-}
+// Without support the enhanced preview is faked from a clip path, so the outline is needed
+// whether or not `exact` is on.
+const previewIsSynthetic = root.dataset.cornerShape === "unsupported";
 
-function text(value: FormDataEntryValue | undefined): string {
-  return typeof value === "string" ? value : "";
-}
-
-function shape(data: Record<string, FormDataEntryValue>, name: string): number {
-  const value = text(data[name]);
+function shapeNumber(value = ""): number {
   if (value === "infinity") return Infinity;
   if (value === "-infinity") return -Infinity;
   return Number(value);
 }
 
-function values<T>(make: (corner: Corner) => T): Record<Corner, T> {
+function perCorner<T>(make: (corner: Corner) => T): Record<Corner, T> {
   return Object.fromEntries(CORNERS.map((corner) => [corner, make(corner)])) as Record<Corner, T>;
 }
 
-// Everything that decides how big the card is, applied before anything measures it.
-function frameCard(data: Record<string, FormDataEntryValue>): void {
-  const style = document.documentElement.style;
-  style.setProperty("--size", String(number(data, "size")));
-  style.setProperty("--ratio", String(number(data, "ratio")));
-  style.setProperty("--p", `${number(data, "padding")}%`);
-  style.setProperty("--fs", `${number(data, "font-size")}rem`);
+function makeState(values: Values, width: number, height: number): GeneratorState {
+  const suffix = values.mode === "individual" ? null : "all";
+  const shapes = perCorner((corner) => shapeNumber(values[`shape-${suffix ?? corner}`]));
+  const radii = perCorner((corner) => Number(values[`radius-${suffix ?? corner}`]));
+  return {
+    selector: values.selector ?? "",
+    unit: values.unit === "px" ? "px" : "rem",
+    width,
+    height,
+    shapes,
+    radii,
+    fallbackRadii: perCorner((corner) => computedFallback(radii[corner], shapes[corner])),
+    exact: values.exact === "on",
+  };
 }
 
-// The card takes its size from the frame it sits in rather than from rem sliders, so the
-// only way to know what the radii have to clamp against is to ask the laid-out box.
+// The card is sized by its frame, not in rem, so the clamp ceiling comes from the laid-out
+// box or nowhere.
 function cardSize(): { width: number; height: number } {
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const rem = parseFloat(getComputedStyle(root).fontSize);
   const box = card.getBoundingClientRect();
   return { width: box.width / rem, height: box.height / rem };
 }
 
-// Past half the card's shorter side a radius has nothing left to bend: the two arcs
-// meeting on that side already touch, and everything beyond is the browser scaling them
-// back down for you. That ceiling is a property of the laid-out card, not a constant, so
-// it has to be re-hung on the sliders every time size or ratio moves — otherwise the top
-// of the track is dead travel on a small card and unreachable on a large one.
-function limitRadii(
-  data: Record<string, FormDataEntryValue>,
-  size: { width: number; height: number },
-): void {
-  const max = Math.min(size.width, size.height) / 2;
-  const maxAttribute = max.toFixed(2);
-  for (const hidden of form.querySelectorAll<HTMLInputElement>('[data-value-for^="radius-"]')) {
-    const name = hidden.dataset.valueFor!;
-    const clamped = Math.min(Number(hidden.value), max);
-    const shrank = clamped !== Number(hidden.value);
-    if (shrank) {
-      hidden.value = String(clamped);
-      data[name] = String(clamped);
-    }
-    for (const peer of form.querySelectorAll<HTMLInputElement>(`[data-bind="${name}"]`)) {
-      peer.max = maxAttribute;
-      if (shrank) peer.value = String(clamped);
-    }
-  }
+// Everything that decides how big the card is, applied before anything measures it.
+function frameCard(values: Values): void {
+  root.style.setProperty("--size", String(Number(values.size)));
+  root.style.setProperty("--ratio", String(Number(values.ratio)));
+  root.style.setProperty("--p", `${Number(values.padding)}%`);
+  root.style.setProperty("--fs", `${Number(values["font-size"])}rem`);
 }
 
-function makeState(
-  data: Record<string, FormDataEntryValue>,
-  size: { width: number; height: number },
-): GeneratorState {
-  const individual = data.mode === "individual";
-  const shapes = values((corner) => shape(data, individual ? `shape-${corner}` : "shape-all"));
-  const radii = values((corner) => number(data, individual ? `radius-${corner}` : "radius-all"));
-  const fallbackRadii = values((corner) => computedFallback(radii[corner], shapes[corner]));
-  return {
-    selector: text(data.selector),
-    unit: data.unit === "px" ? "px" : "rem",
-    width: size.width,
-    height: size.height,
-    shapes,
-    radii,
-    fallbackRadii,
-    exact: data.exact === "on",
-  };
+// Only needed when the preview has to draw one, which saves a curve fit on every frame of
+// a slider drag in a browser that can do `corner-shape` itself.
+function previewClip(state: GeneratorState): string | null {
+  if (!previewIsSynthetic && !state.exact) return null;
+  return exactClipPath({ ...state, unit: "rem" });
 }
 
-// The played half of a slider's track is drawn in CSS from `--progress`, because no
-// pseudo-element for it exists outside Firefox. This is the only thing that knows the ratio.
-function paintRanges(): void {
-  for (const input of form.querySelectorAll<HTMLInputElement>(".range-input")) {
-    const min = Number(input.min);
-    const span = Number(input.max) - min;
-    const progress = span > 0 ? (input.valueAsNumber - min) / span : 0;
-    input.style.setProperty("--progress", progress.toFixed(4));
-  }
-}
-
-function render(data: Record<string, FormDataEntryValue>): void {
-  frameCard(data);
-  const size = cardSize();
-  limitRadii(data, size);
-  const state = makeState(data, size);
-  const individual = data.mode === "individual";
-  const style = document.documentElement.style;
+function paintPreview(state: GeneratorState, values: Values, clip: string | null): void {
   for (const corner of CORNERS) {
-    style.setProperty(`--r-${corner}`, `${state.radii[corner]}rem`);
-    style.setProperty(`--fb-r-${corner}`, `${state.fallbackRadii[corner]}rem`);
-    style.setProperty(`--shape-${corner}`, shapeValue(state.shapes[corner]));
+    root.style.setProperty(`--r-${corner}`, `${state.radii[corner]}rem`);
+    root.style.setProperty(`--fb-r-${corner}`, `${state.fallbackRadii[corner]}rem`);
+    root.style.setProperty(`--shape-${corner}`, shapeValue(state.shapes[corner]));
   }
-  for (const input of form.querySelectorAll<HTMLInputElement>(".shape-control .range-input")) {
-    const value = shape(data, input.dataset.bind!);
-    input.setAttribute("aria-valuetext", shapeValue(value));
-  }
-  paintRanges();
-  const clip = exactClipPath({ ...state, unit: "rem" });
-  style.setProperty("--preview-clip", clip ?? "none");
-  stage.dataset.preview = text(data.preview);
-  stage.dataset.exact = String(state.exact && Boolean(clip));
-  // No clip path means one of two things, and they need opposite treatment: every corner
-  // is round (border-radius already draws it) or every corner is square (nothing to draw).
+  root.style.setProperty("--preview-clip", clip ?? "none");
+  stage.dataset.preview = values.preview ?? "enhanced";
+  stage.dataset.exact = String(state.exact && clip !== null);
+  // No clip path means all-round (border-radius draws it) or all-square (nothing to draw).
   stage.dataset.clip = clip ? "path" : "none";
   stage.dataset.square = String(CORNERS.every((corner) => state.shapes[corner] === Infinity));
-  card.textContent = text(data.text) || " ";
-  const declarations = declarationValues(state);
-  readout.textContent = `border-radius: ${declarations.radius};\ncorner-shape: ${declarations.shape};`;
-  output.textContent = emitCss(state);
+  card.textContent = values.text || " ";
+}
+
+function paintControls(values: Values): void {
+  for (const input of shapeRanges) {
+    input.setAttribute("aria-valuetext", shapeValue(shapeNumber(values[input.dataset.bind!])));
+  }
+  syncPresetChecks(values);
+  paintRangeProgress();
+  form.dataset.mode = values.mode === "individual" ? "individual" : "all";
+}
+
+let emitted = "";
+
+function paintOutput(state: GeneratorState): void {
+  const { radius, shape } = declarationValues(state);
+  readout.textContent = `border-radius: ${radius};\ncorner-shape: ${shape};`;
+
+  const css = emitCss(state);
+  // Highlighting re-parses and rebuilds the block; identical text leaves it nothing to do.
+  if (css === emitted) return;
+  emitted = css;
+  output.textContent = css;
   void highlightElement(output, "css", "multiline", { hideLineNumbers: true });
-  form.dataset.mode = individual ? "individual" : "all";
 }
 
-function syncPair(target: HTMLInputElement): void {
-  const binding = target.dataset.bind;
-  if (!binding) return;
-  const hidden = form.querySelector<HTMLInputElement>(`[data-value-for="${binding}"]`)!;
-  const peers = form.querySelectorAll<HTMLInputElement>(`[data-bind="${binding}"]`);
-  let value = target.value.trim().toLowerCase().replace("∞", "infinity");
-  if (value === "+infinity") value = "infinity";
-  const finite = Number(value);
-  if (Number.isFinite(finite)) {
-    const range = [...peers].find((peer) => peer.type === "range");
-    const clamped = range
-      ? Math.min(Number(range.max), Math.max(Number(range.min), finite)).toString()
-      : value;
-    value = clamped;
-    for (const peer of peers) peer.value = clamped;
-  } else if (value === "infinity" || value === "-infinity") {
-    for (const peer of peers) {
-      peer.value = peer.type === "range" ? (value.startsWith("-") ? peer.min : peer.max) : value;
-    }
-  } else {
-    return;
-  }
-  hidden.value = value;
+function render(): void {
+  const values = readValues();
+  frameCard(values);
+  const { width, height } = cardSize();
+  // Clamping rewrites the radius inputs, which makes the values read a moment ago stale.
+  const settled = limitRadii(width, height) ? readValues() : values;
+  const state = makeState(settled, width, height);
+
+  paintControls(settled);
+  paintPreview(state, settled, previewClip(state));
+  paintOutput(state);
 }
 
-function selectPreset(target: HTMLInputElement): void {
-  const binding = target.dataset.presetFor;
-  if (!binding) return;
-  const numberInput = form.querySelector<HTMLInputElement>(
-    `[data-bind="${binding}"]:not([type="range"])`,
-  )!;
-  numberInput.value = target.value;
-  syncPair(numberInput);
-}
+// A drag fires `input` faster than the page can paint, and measuring the card forces
+// layout. One render per frame is all any of them can show.
+let frame = 0;
 
-// A stop lighting up because the slider crossed it is not a move anyone made with the
-// toggle: the thumb would slide in from wherever it was parked and slide straight back out
-// as the next pixel of drag un-checks it. Only a press on the toggle itself gets the slide.
-function updatePresetStates(data: Record<string, FormDataEntryValue>, fromToggle: boolean): void {
-  for (const preset of form.querySelectorAll<HTMLInputElement>("[data-preset-for]")) {
-    preset.checked = text(data[preset.dataset.presetFor!]) === preset.value;
-    preset.closest<HTMLElement>(".toggle")!.dataset.instant = String(!fromToggle);
-  }
+function scheduleRender(): void {
+  if (frame) return;
+  frame = requestAnimationFrame(() => {
+    frame = 0;
+    render();
+  });
 }
 
 form.addEventListener("input", (event) => {
   const target = event.target as HTMLInputElement;
-  selectPreset(target);
-  syncPair(target);
-  const data = Object.fromEntries(new FormData(form));
-  updatePresetStates(data, target.matches("[data-preset-for]"));
-  render(data);
+  const fromToggle = target.matches("[data-preset-for]");
+  if (fromToggle) applyPreset(target);
+  else syncField(target);
+  markPresetTransition(fromToggle);
+  scheduleRender();
 });
+
+// Typing has stopped: a half-typed or out-of-range number snaps into shape.
+form.addEventListener("change", (event) => {
+  const target = event.target as HTMLInputElement;
+  if (!target.matches("[data-preset-for]")) syncField(target, true);
+  scheduleRender();
+});
+
+// A frame that grows with the viewport moves where the radii start clamping, and that
+// clamp is baked into the emitted clip path.
+window.addEventListener("resize", scheduleRender, { passive: true });
 
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
 copyButton.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(output.textContent ?? "");
+  try {
+    // The emitted source, not the highlighted DOM, which is wrapped in the parser's markup.
+    await navigator.clipboard.writeText(emitted);
+  } catch {
+    return;
+  }
   copyButton.dataset.copied = "";
   clearTimeout(copiedTimer);
   copiedTimer = setTimeout(() => delete copyButton.dataset.copied, 2000);
 });
 
-// A frame that grows with the viewport moves the point where the radii start clamping,
-// and the clamp is baked into the emitted clip path.
-window.addEventListener("resize", () => render(Object.fromEntries(new FormData(form))));
-
-render(Object.fromEntries(new FormData(form)));
+render();

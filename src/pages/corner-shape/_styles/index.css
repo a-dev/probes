@@ -37,10 +37,6 @@ html {
     padding: clamp(1.25rem, 4vw, 3rem) 1.5rem 0;
   }
 
-  .section-title {
-    font-size: 1.15rem;
-  }
-
   .eyebrow {
     font-size: 0.9rem;
     font-weight: 800;
@@ -179,8 +175,7 @@ html {
 
   .text-input:focus-visible,
   .range-input:focus-visible,
-  .button:focus-visible,
-  .chip:has(:focus-visible) {
+  .button:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: 2px;
   }

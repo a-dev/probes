@@ -1,12 +1,12 @@
-// Every control the generator draws is described once, here, so the markup stays a loop
-// over data instead of four hand-copied corners. Nothing in this file knows how a control
-// is rendered — only what it means and what range of numbers it accepts.
+// Every control the generator draws, described once, so the markup stays a loop over data
+// instead of four hand-copied corners. Nothing here knows how a control is rendered —
+// only what it means and what numbers it accepts.
 
 import type { Corner } from "./emit";
 
 // The card is measured against the square frame it sits in, not in rem: `size` is the
-// fraction of that frame it fills (1 leaves the 0.5rem the frame is padded with) and
-// `ratio` stretches it from a wide bar to a tall one without ever letting it escape.
+// fraction of that frame it fills, and `ratio` stretches it from a wide bar to a tall one
+// without ever letting it escape.
 export const DIMENSIONS = [
   {
     name: "size",
@@ -54,8 +54,8 @@ export const CORNER_LABELS: { id: Corner; label: string }[] = [
   { id: "bl", label: "bottom-left" },
 ];
 
-// The named stops on the shape scale. `s` is an exponent, so the two ends are the
-// keywords the spec hands out once the curve has flattened into a straight line.
+// `s` is an exponent, so the two ends are the keywords the spec hands out once the curve
+// has flattened into a straight line.
 export const PRESETS = [
   { label: "Notch", value: "-infinity" },
   { label: "Scoop", value: "-1" },
@@ -70,7 +70,6 @@ export const DEFAULT_RADIUS = "1";
 
 // Shape and radius take the same two ranges everywhere they appear.
 export const SHAPE_RANGE = { min: -3, max: 5, step: 0.1 } as const;
-// The radius maximum here is only what the server can guess before anything is laid out.
-// The real ceiling is half the card's shorter side — a circle — and `_lib/generator.ts`
-// rewrites it on every render, so this value survives about one frame.
+// A guess, for the server: the real ceiling is half the laid-out card's shorter side, and
+// `_lib/form.ts` rewrites it on every render, so this value survives about one frame.
 export const RADIUS_RANGE = { min: 0, max: 18, step: 0.01 } as const;

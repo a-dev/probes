@@ -1,15 +1,12 @@
 ---
 import Toggle from "./toggle.astro";
-import "./output-section.css";
 
 // The take-away. The order is the point: the fallback declaration comes first so every
-// browser gets something, and the `@supports` block that follows only reaches browsers
-// that can honour the real shape. `_lib/emit.ts` builds the text, this is the frame
-// around it plus the two things you might want to change about it — the selector it is
-// written for and the unit its lengths are in.
+// browser gets something, and the `@supports` block only reaches those that can honour the
+// real shape. `_lib/emit.ts` builds the text; this is the frame around it.
 ---
 
-<section class="output-section" aria-labelledby="output-title">
+<section class="output-section" aria-label="Generated CSS">
   <pre id="css-output" class="css-output" tabindex="0"></pre>
   <div class="output-controls">
     <div>
@@ -60,3 +57,243 @@ import "./output-section.css";
     </div>
   </div>
 </section>
+
+<style>
+  .output-section {
+    isolation: isolate;
+    position: relative;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.35fr);
+    gap: 1.8rem;
+
+    margin-top: 4rem;
+    padding-block: 1.4rem;
+  }
+
+  .output-section::before {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+
+    display: block;
+
+    width: 100dvw;
+    height: 100%;
+
+    background-color: var(--color-code-surface);
+  }
+
+  .output-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    height: 100%;
+  }
+
+  .output-options {
+    display: grid;
+    gap: 1.8rem;
+  }
+
+  .selector-field {
+    display: grid;
+    flex-grow: 1;
+    gap: 0.25rem;
+  }
+
+  .copy-css-button {
+    display: grid;
+    width: 100%;
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
+  }
+
+  /* Both labels share one grid cell; only one is visible at a time. */
+  .copy-css-label {
+    grid-area: 1 / 1;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      visibility 0.25s;
+  }
+
+  .copy-css-label-copied,
+  .copy-css-button[data-copied] .copy-css-label-idle {
+    transform: translateY(-0.35rem);
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .copy-css-button[data-copied] {
+    background: var(--color-blue-energy-600);
+  }
+
+  .copy-css-button[data-copied] .copy-css-label-copied {
+    transform: none;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Both halves live in `toggle.astro`: the class rides in as a prop and lands on that
+     component's own fieldset, so neither carries this component's scope. */
+  :global(.unit-toggle .toggle-option) {
+    padding-inline: 0.8rem;
+  }
+
+  /* `1em auto` is the whole layout: the box occupies exactly one em-width column, the
+     label takes the rest, and both stay on the text baseline as the font-size changes. */
+  .exact-toggle {
+    cursor: pointer;
+
+    display: grid;
+    grid-template-columns: 1em auto;
+    gap: 0.5em;
+    align-items: center;
+
+    margin-inline-start: 0.1rem;
+
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
+
+  .exact-toggle-input {
+    display: grid;
+    place-content: center;
+
+    width: 1.15em;
+    height: 1.15em;
+    margin: 0;
+    border: 0.12em solid currentcolor;
+    border-radius: 0.22em;
+
+    font: inherit;
+    color: currentcolor;
+
+    appearance: none;
+    background-color: var(--color-control-bg);
+
+    transition:
+      background-color 120ms ease-in-out,
+      border-color 120ms ease-in-out;
+  }
+
+  .exact-toggle-input::before {
+    content: "";
+
+    transform-origin: left bottom;
+    transform: scale(0);
+
+    width: 0.7em;
+    height: 0.7em;
+
+    background-color: var(--color-card-text);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+
+    transition: transform 120ms ease-in-out;
+  }
+
+  .exact-toggle-input:checked {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+  }
+
+  .exact-toggle-input:checked::before {
+    transform: scale(1);
+  }
+
+  .exact-toggle-input:focus-visible {
+    outline: max(2px, 0.12em) solid var(--color-focus);
+    outline-offset: max(2px, 0.12em);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .exact-toggle-input::before {
+      transition-duration: 0s;
+    }
+  }
+
+  .css-output {
+    overflow: auto;
+
+    min-height: 12rem;
+    max-height: 32rem;
+    padding-block: 1.4rem;
+    padding-inline: 1.8rem;
+    border-right: 3px solid var(--color-code-border);
+    border-left: 3px solid var(--color-code-border);
+
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--color-text-primary);
+    tab-size: 2;
+
+    background: radial-gradient(
+      circle at 0% 50%,
+      var(--color-hunter-green-20) 0%,
+      var(--color-transparent) 28%,
+      var(--color-transparent)
+    );
+  }
+
+  /* Speed-highlight's own class names, mapped onto the page palette. */
+  .css-output :global(.shj-numbers) {
+    display: none;
+  }
+
+  .css-output :global(.shj-syn-cmnt) {
+    font-style: italic;
+    color: var(--color-syntax-comment);
+  }
+
+  .css-output :global(.shj-syn-kwd),
+  .css-output :global(.shj-syn-oper) {
+    color: var(--color-syntax-keyword);
+  }
+
+  .css-output :global(.shj-syn-num),
+  .css-output :global(.shj-syn-class) {
+    color: var(--color-syntax-number);
+  }
+
+  .css-output :global(.shj-syn-str),
+  .css-output :global(.shj-syn-insert) {
+    color: var(--color-syntax-string);
+  }
+
+  .css-output :global(.shj-syn-func),
+  .css-output :global(.shj-syn-var),
+  .css-output :global(.shj-syn-type) {
+    color: var(--color-syntax-function);
+  }
+
+  @media (width <= 48rem) {
+    .output-section {
+      grid-template-columns: 1fr;
+    }
+
+    .output-controls {
+      border-right: 0;
+      border-bottom: 1px solid var(--color-divider);
+    }
+  }
+
+  .class-name-input {
+    border: 1px solid var(--color-input-border);
+  }
+</style>

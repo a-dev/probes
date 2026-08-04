@@ -3,17 +3,14 @@ import { CORNER_LABELS } from "../_lib/controls";
 import CardProperties from "./card-properties.astro";
 import CornerFields from "./corner-fields.astro";
 import Toggle from "./toggle.astro";
-// import "./shape-settings.css";
 
-// The corners. Two sets of the same controls live in the markup at once and the mode
-// switch shows one of them — keeping both mounted means the form always serialises a
-// complete answer for whichever mode is active, so nothing has to be reconstructed when
-// you flip between them.
+// The corners. Both sets of controls stay in the markup and the mode switch shows one of
+// them, so the form always serialises a complete answer for whichever mode is active.
 ---
 
-<section class="root" aria-labelledby="controls-title">
+<section aria-labelledby="controls-title">
   <div class="header">
-    <div class="eyebrow">Controls</div>
+    <div class="eyebrow" id="controls-title">Controls</div>
     <CardProperties />
   </div>
   <Toggle
@@ -44,9 +41,6 @@ import Toggle from "./toggle.astro";
   </div>
 </section>
 <style>
-  .root {
-  }
-
   .header {
     padding-block-end: 2.75rem;
     position: relative;
@@ -64,27 +58,19 @@ import Toggle from "./toggle.astro";
     background: var(--background-dots);
   }
 
-  .title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 0;
-  }
-
   :global(.mode-toggle) {
     margin-block: 1.6rem 1.8rem;
     background: var(--color-page-background);
   }
 
-  .header-corners {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.8rem;
-  }
-
   .corner-group {
     display: grid;
     gap: 1.8rem;
+
+    min-width: 0;
+    padding: 0.6rem 0;
+    border: 0;
+
     background: var(--color-page-background);
   }
 
@@ -98,21 +84,12 @@ import Toggle from "./toggle.astro";
     background: var(--color-page-background);
   }
 
-  /* Both sets of controls stay in the DOM and the mode switch shows one of them, so the
-   form always serialises a complete answer for whichever mode is active. */
-
   :global(.generator-form[data-mode="individual"]) .all-controls {
     display: none;
   }
 
   :global(.generator-form[data-mode="individual"]) .individual-controls {
     display: grid;
-  }
-
-  .corner-group {
-    min-width: 0;
-    padding: 0.6rem 0;
-    border: 0;
   }
 
   /* The rule that used to be the fieldset's border-top now lives beside the label: the

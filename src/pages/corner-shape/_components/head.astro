@@ -1,7 +1,3 @@
----
-import "./head.css";
----
-
 <header class="page-head">
   <div>
     <div class="eyebrow">CSS tool</div>
@@ -73,3 +69,161 @@ import "./head.css";
     </div>
   </details>
 </header>
+
+<style>
+  .page-head {
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 4rem;
+  }
+
+  .page-title {
+    margin-block-start: 6px;
+    margin-inline-start: calc(min(0.5vw, 6px) * -1);
+
+    font-size: clamp(2.4rem, 6.6vw, 5.4rem);
+    font-weight: 800;
+    line-height: 0.9;
+    color: var(--color-blue-energy-500);
+    text-shadow: 0 -7px 0
+      color-mix(var(--color-blue-energy-100) clamp(10%, calc((100vw / 20px) * 1%), 80%), transparent);
+    letter-spacing: -0.02em;
+  }
+
+  .page-intro {
+    font-size: 1.22rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+    text-wrap: balance;
+
+    & .code {
+      font-weight: 700;
+    }
+  }
+
+  .about-summary-arrow {
+    display: inline-block;
+    margin-top: -1px;
+    font-weight: 800;
+    transition: transform 0.4s ease-in;
+  }
+
+  .about {
+    isolation: isolate;
+    position: relative;
+
+    overflow: hidden;
+
+    margin-top: 0.8rem;
+    padding-block: 0.6rem;
+    padding-inline: 1.8rem;
+
+    &::before {
+      content: "";
+
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+
+      display: block;
+
+      width: 6px;
+      height: 100%;
+      border-right: 3px solid var(--color-info-border);
+      border-left: 3px solid var(--color-info-border);
+
+      background: color-mix(var(--color-info-surface) 50%, transparent);
+
+      transition: width 0.8s cubic-bezier(0.348, 0.756, 0.771, 0.923);
+    }
+
+    &::details-content {
+      block-size: 0;
+      transition:
+        block-size 0.4s cubic-bezier(0.348, 0.756, 0.771, 0.923),
+        content-visibility 0.4s linear;
+      transition-behavior: allow-discrete;
+    }
+
+    &[open] .about-summary-arrow {
+      transform: rotate(45deg);
+    }
+
+    &[open]::before {
+      width: 100%;
+    }
+
+    &[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  .about-summary {
+    cursor: pointer;
+
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+
+    width: fit-content;
+
+    font-size: 1.1rem;
+
+    &::marker {
+      content: "";
+    }
+  }
+
+  .about-content {
+    container-type: inline-size;
+    column-width: 36ch;
+    column-fill: balance;
+    column-gap: 2.8rem;
+
+    padding-block: 0.8rem 1.2rem;
+
+    font-size: 1.1rem;
+    font-weight: 400;
+    line-height: 1.44;
+    color: var(--color-text-primary);
+
+    a,
+    a .code {
+      transition: all 0.2s ease-in;
+    }
+
+    & a:has(.code) {
+      text-decoration-color: var(--color-code-text);
+      text-decoration-thickness: 2.5px;
+      text-underline-offset: 0.16em;
+    }
+
+    & a:has(.code):has(:hover) {
+      text-decoration-color: var(--color-blue-energy-400);
+    }
+
+    & a:hover .code {
+      color: var(--color-blue-energy-400);
+    }
+
+    strong {
+      color: var(--color-text-primary);
+    }
+  }
+
+  .about-paragraph {
+    orphans: 2;
+    break-inside: auto;
+    margin-bottom: 0.44rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .about-link {
+    color: var(--color-accent);
+  }
+</style>

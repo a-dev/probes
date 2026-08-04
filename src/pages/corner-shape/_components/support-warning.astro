@@ -1,7 +1,3 @@
----
-import "./support-warning.css";
----
-
 <aside class="support-warning">
   <strong>Your browser doesn't do <code class="code">corner-shape</code> yet.</strong
   >
@@ -10,3 +6,21 @@ import "./support-warning.css";
   >, just to show you the shape you're designing. Switch to Fallback and you'll see
   what this browser really gets from the generated CSS.
 </aside>
+
+<style>
+  .support-warning {
+    display: none;
+
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 2px solid var(--color-warning-border);
+
+    color: var(--color-warning-text);
+
+    background: var(--color-transparent);
+  }
+
+  :global(:root[data-corner-shape="unsupported"]) .support-warning {
+    display: block;
+  }
+</style>

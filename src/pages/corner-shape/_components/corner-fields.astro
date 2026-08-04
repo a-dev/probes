@@ -9,11 +9,9 @@ import {
 import PresetToggle from "./preset-toggle.astro";
 import SliderField from "./slider-field.astro";
 
-// The three fields that describe one corner: a preset, the exponent behind it, and the
-// radius it bends through. The radius a browser without `corner-shape` falls back to is
-// derived from those, never typed. Identical whether it drives all four corners at once
-// (`all`) or a single one, so the only thing that changes is the field-name suffix and
-// how the labels read aloud.
+// The three fields describing one corner: a preset, the exponent behind it, and the radius
+// it bends through. The fallback radius is derived from those, never typed. Identical for
+// all four corners or one, so only the name suffix and the spoken labels change.
 interface Props {
   /** `all`, or one of `tl` / `tr` / `br` / `bl`. */
   target: string;
