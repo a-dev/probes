@@ -1,7 +1,19 @@
 ---
 import "@/shared/styles/reset.css";
 
+import { Font } from "astro:assets";
+
+// The landing page is just the README: one list of probes, one place to edit it.
+import { compiledContent } from "../../README.md";
+
 const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+
+// README links to code with repo-relative paths (`./src/pages/overscroll`),
+// which mean nothing once the file is served as a web page — point them at GitHub.
+const readmeHtml = (await compiledContent()).replaceAll(
+  'href="./',
+  'href="https://github.com/a-dev/probes/tree/main/',
+);
 ---
 
 <html lang="en">
@@ -9,23 +21,86 @@ const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
     <link rel="icon" href={`${baseUrl}favicon.ico`} />
+    <Font cssVariable="--font-atkinson" preload />
+    <Font cssVariable="--font-atkinson-mono" preload />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>nothing here</title>
+    <title>@a-dev/probes</title>
+    <meta
+      name="description"
+      content="A collection of experiments and probes in web development, design, and technology."
+    />
   </head>
   <body>
-    <h1>nothing here</h1>
+    <main class="readme" set:html={readmeHtml} />
   </body>
 </html>
 
 <style>
+  html {
+    --color-bg: oklch(0 0 0);
+    --color-text: oklch(0.931 0 0);
+    --color-link: oklch(0.796 0.111 245);
+    --color-link-hover: oklch(1 0 0);
+    --color-code-bg: oklch(0.218 0 0);
+    --color-rule: oklch(0.269 0 0);
+  }
+
   body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #000;
-    color: #fff;
-    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-atkinson), system-ui, sans-serif;
+  }
+
+  .readme {
+    max-width: 68ch;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 5vw, 4rem) 1.25rem;
+    font-size: 1.1rem;
+  }
+
+  .readme :global(h1) {
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    font-size: clamp(2rem, 6vw, 3rem);
+    letter-spacing: -0.04em;
+    margin-block-end: 1rem;
+  }
+
+  .readme :global(p) {
+    margin-block-end: 1rem;
+    font-size: 1.4rem;
+  }
+
+  .readme :global(ul) {
+    list-style: none;
+    padding: 0;
+  }
+
+  .readme :global(li) {
+    margin-block-end: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .readme :global(a) {
+    color: var(--color-link);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .readme :global(a:hover) {
+    color: var(--color-link-hover);
+  }
+
+  .readme :global(code) {
+    font-family: var(--font-atkinson-mono), ui-monospace, monospace;
+    background-color: var(--color-code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  .readme :global(hr) {
+    border: 0;
+    border-block-start: 1px solid var(--color-rule);
+    margin-block: 2rem;
   }
 </style>

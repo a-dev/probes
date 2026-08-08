@@ -9,6 +9,38 @@ import Head from "./_components/head.astro";
 import SupportWarning from "./_components/support-warning.astro";
 
 const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+
+// Crawlers and social scrapers resolve nothing: canonical, og:image and friends all have to be
+// absolute. They also have to name the *deployed* page rather than whatever host is serving this
+// build, so these go through `Astro.site` — which already carries the `/probes` base — instead of
+// `BASE_URL`, which is only `/probes` when GITHUB_PAGES is set.
+const siteRoot = `${(Astro.site?.href ?? "https://a-dev.github.io/probes/").replace(/\/$/, "")}/`;
+const absolute = (path: string) => new URL(path, siteRoot).href;
+
+const pageUrl = absolute("corner-shape/");
+const socialImage = absolute("corner-shape-og.png");
+
+const title = "CSS corner-shape generator: squircles with a fallback";
+const description =
+  "Make CSS corner-shape superellipse corners, preview them live, and copy the CSS with a matching border-radius or clip-path fallback for browsers without support.";
+
+// Google's own docs list SoftwareApplication as the type for a tool page; the generator is a
+// free, browser-only one, which is exactly what the offer and operatingSystem say here.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "CSS corner-shape generator",
+  url: pageUrl,
+  description,
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires JavaScript",
+  image: socialImage,
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  author: { "@type": "Person", name: "a-dev", url: "https://github.com/a-dev" },
+  license: "https://opensource.org/licenses/MIT",
+};
 ---
 
 <html lang="en">
@@ -20,8 +52,43 @@ const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
     <Font cssVariable="--font-atkinson-mono" preload />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>CSS corner-shape generator | @a-dev/probes</title>
-    <meta name="description" content="Way to generate CSS corner shapes" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={pageUrl} />
+    <meta name="author" content="a-dev" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#fffef9" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="@a-dev/probes" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content="CSS corner-shape generator" />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
+    <meta
+      property="og:image:alt"
+      content="A blue squircle card next to the corner-shape wordmark, above the CSS it generates."
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CSS corner-shape generator" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta
+      name="twitter:image:alt"
+      content="A blue squircle card next to the corner-shape wordmark, above the CSS it generates."
+    />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
     <script is:inline>
       document.documentElement.dataset.cornerShape = CSS.supports(
         "corner-shape: squircle",
