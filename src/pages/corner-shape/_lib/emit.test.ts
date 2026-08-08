@@ -56,6 +56,35 @@ describe("css emission", () => {
     expect(emitCss(uniform(-1))).toContain("bends inward");
   });
 
+  test("rounds the border under a clip that is fuller than a circle", () => {
+    // Without it the border keeps its square corners under the cut and loses them. The
+    // radius has to be the one the path was drawn from, or the two curves disagree.
+    const css = emitCss({ ...uniform(2), exact: true });
+    expect(css).toContain("border-radius: 1rem;\n  clip-path: shape(");
+    expect(css).toContain("the radius is for the border");
+  });
+
+  test("leaves the border square where a circle would poke back out", () => {
+    // `bevel` and below sit inside the circle, so rounding the border would clip its
+    // corners again — the bug it was meant to fix, wearing a fix's clothes.
+    for (const s of [-Infinity, -1, 0, 0.5]) {
+      const css = emitCss({ ...uniform(s), exact: true });
+      expect(css).not.toContain("border-radius: 1rem;\n  clip-path:");
+      expect(css).toContain("loses its corners to the cut");
+    }
+  });
+
+  test("counts a square corner as no curve to hide under", () => {
+    const mixed = { ...state, shapes: { tl: 2, tr: Infinity, br: 2, bl: 2 }, exact: true };
+    expect(emitCss(mixed)).not.toContain("border-radius: 1rem;\n  clip-path:");
+  });
+
+  test("shrinks the border to the radius the path was clamped to", () => {
+    // A 1rem radius on a 1rem-tall box is drawn at 0.5rem, path and border alike.
+    const flat = { ...uniform(2), exact: true, height: 1 };
+    expect(emitCss(flat)).toContain("border-radius: 0.5rem;\n  clip-path: shape(");
+  });
+
   test("shortens four equal corners to one value", () => {
     expect(emitCss(state)).toContain("corner-shape: squircle;");
     expect(emitCss({ ...state, shapes: { ...state.shapes, tr: 0 } })).toContain(

@@ -79,7 +79,11 @@ Corner properties only — the size and padding sliders are staging for judging 
 
 Concave shapes get the typed radius plus a comment saying it is a placeholder, not a match.
 
-**Exact tier** (opt-in) — the base rule carries a clip path and the `@supports` block removes it with `clip-path: none`. `bevel` and `notch` emit `polygon()`, everything else `shape()`; all-round and all-square need no path at all and fall back to the radius. Radii are clamped before emission. The trade-off is stated in a comment in the output: a clip path also cuts off `box-shadow`, `outline`, and anything the border draws outside it. That is why the exact tier is opt-in rather than the default.
+**Exact tier** (opt-in) — the base rule carries a clip path and the `@supports` block removes it with `clip-path: none`. `bevel` and `notch` emit `polygon()`, everything else `shape()`; all-round and all-square need no path at all and fall back to the radius. Radii are clamped before emission. The trade-off is stated in a comment in the output: the cut lands on the border box, so a `border`, `outline`, or `box-shadow` on the element loses its corners to it — straight stubs of edge with bare curve between them — and the comment sends stroked elements back to the radius tier. That is why the exact tier is opt-in rather than the default.
+
+Where every corner is at least as full as a circle — `s ≥ 1`, so `k = 2^s ≥ 2` — the tier also emits the clamped `border-radius` the path was drawn from, and swaps the comment for one that says what that buys. A rounded border stays inside the clip instead of losing its corners to it, `round` being the exact case where the two curves are the same one. Below `round` (`bevel`, `scoop`, `notch`, any `0 < s < 1`) the circle bulges back out through the clip and the corners are cut anyway, and `square` has no curve to hide under, so those emit the path alone and keep the original warning rather than shipping a fix that does not fix.
+
+The radius only keeps the border whole; it does not make it follow the shape. A circle drifts from the superellipse as the radius grows — under 2px at 19px, 9px at `squircle` on 3rem, 12.5px at the 4.9rem the support panel used to carry — which is why `_components/baseline.astro` takes the radius tier instead. `outline` and `box-shadow` are cut either way.
 
 ## Preview
 

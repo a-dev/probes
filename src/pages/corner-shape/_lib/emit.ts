@@ -125,16 +125,22 @@ function shapePath(state: GeneratorState, radii: CornerValues): string {
   return `shape(\n    ${commands.join(",\n    ")}\n  )`;
 }
 
-export function exactClipPath(state: GeneratorState): string | null {
-  const shapes = CORNERS.map((corner) => state.shapes[corner]);
-  // Round is already what border-radius draws, and square needs no path at all.
-  if (shapes.every((s) => s === 1) || shapes.every((s) => s === Infinity)) return null;
+// The radii the path is actually drawn from: what was typed, shrunk to fit the box the
+// preview is showing, the way a browser shrinks `border-radius` to fit an element.
+function clippedRadii(state: GeneratorState): CornerValues {
   const [tl, tr, br, bl] = clampRadii(
     CORNERS.map((corner) => state.radii[corner]) as [number, number, number, number],
     state.width,
     state.height,
   );
-  const radii = { tl, tr, br, bl };
+  return { tl, tr, br, bl };
+}
+
+export function exactClipPath(state: GeneratorState): string | null {
+  const shapes = CORNERS.map((corner) => state.shapes[corner]);
+  // Round is already what border-radius draws, and square needs no path at all.
+  if (shapes.every((s) => s === 1) || shapes.every((s) => s === Infinity)) return null;
+  const radii = clippedRadii(state);
   // Straight-edged shapes are exact as polygons, and readable as output; only curves
   // need `shape()`.
   return shapes.every((s) => s === -Infinity || s === 0 || s === Infinity)
@@ -142,8 +148,31 @@ export function exactClipPath(state: GeneratorState): string | null {
     : shapePath(state, radii);
 }
 
+// The cut lands on the border box, so a border on this element is a rectangle underneath
+// it and loses its four corners to the clip — stubs of straight edge with bare curve
+// between them.
 const CLIP_NOTE =
-  "/* a clip path also cuts off box-shadow, outline, and anything the border\n   draws outside it */";
+  "/* a clip path cuts at the border box: a border, outline, or box-shadow on\n   this element loses its corners to the cut. Turn the exact fallback off if\n   the element carries one — the border-radius tier keeps them. */";
+
+// Said instead when the radius below is doing that job, because the promise is narrower
+// than it looks: the border is whole, but it is a circle sitting inside a curve that is
+// not one, and the two part company as the radius grows.
+const ROUNDED_CLIP_NOTE =
+  "/* the radius is for the border: the clip cuts at the border box, so a\n   square border loses its corners. A rounded one still traces a circle,\n   so it drifts on a large radius. outline and box-shadow are cut too. */";
+
+// A rounded border only hides under a corner at least as full as a circle — `k = 2^s ≥ 2`,
+// so `s ≥ 1`. `round` is the exact case, the two curves being the same one. Below it the
+// circle bulges back out through the clip and the corners go again, and `square` has no
+// curve to hide under at all, so those keep a square border and the warning.
+function radiusUnderClip(state: GeneratorState): string | null {
+  const hidden = CORNERS.every((corner) => {
+    const s = state.shapes[corner];
+    return s >= 1 && Number.isFinite(s);
+  });
+  if (!hidden) return null;
+  const radii = clippedRadii(state);
+  return shorthand(CORNERS.map((corner) => length(radii[corner], state.unit)));
+}
 
 function concaveNote(state: GeneratorState): string {
   const concave = CORNERS.find((corner) => state.shapes[corner] < 0);
@@ -158,7 +187,12 @@ function concaveNote(state: GeneratorState): string {
 // What a browser without `corner-shape` gets: either the outline traced exactly, or a
 // radius tuned to remove the same corner area.
 function fallbackTier(state: GeneratorState, selector: string, clipPath: string | null): string {
-  if (clipPath) return `${CLIP_NOTE}\n${selector} {\n  clip-path: ${clipPath};\n}`;
+  if (clipPath) {
+    const underClip = radiusUnderClip(state);
+    const note = underClip ? ROUNDED_CLIP_NOTE : CLIP_NOTE;
+    const rounding = underClip ? `  border-radius: ${underClip};\n` : "";
+    return `${note}\n${selector} {\n${rounding}  clip-path: ${clipPath};\n}`;
+  }
   const radius = shorthand(
     CORNERS.map((corner) => length(state.fallbackRadii[corner], state.unit)),
   );

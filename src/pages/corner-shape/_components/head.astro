@@ -50,8 +50,9 @@
           >exact fallback</strong
         >{" "}
         uses <code class="code code-no-wrap">clip-path</code> to trace the actual
-        curve. It reproduces the shape exactly, but then cuts off anything rendered
-        outside it, including your shadows and outlines.
+        curve. It reproduces the shape exactly, but the cut lands on the border box,
+        and anything drawn there loses its corners to it. Corners at least as full
+        as a circle get a rounded border that survives the cut.
       </p>
       <p class="about-paragraph">
         For outward-curving corners, the generator calculates a <code
@@ -86,7 +87,10 @@
     line-height: 0.9;
     color: var(--color-blue-energy-500);
     text-shadow: 0 -7px 0
-      color-mix(var(--color-blue-energy-100) clamp(10%, calc((100vw / 20px) * 1%), 80%), transparent);
+      color-mix(
+        var(--color-blue-energy-100) clamp(10%, calc((100vw / 20px) * 1%), 80%),
+        transparent
+      );
     letter-spacing: -0.02em;
   }
 
