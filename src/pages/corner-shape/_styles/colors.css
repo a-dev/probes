@@ -66,6 +66,7 @@
 :root {
   --color-text-primary: var(--color-sunflower-gold-950);
   --color-text-secondary: var(--color-sunflower-gold-900);
+  --color-text-tertiary: var(--color-sunflower-gold-700);
 
   /* checked */
   --color-eyebrow: var(--color-dusty-rose-300);

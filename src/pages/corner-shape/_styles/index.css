@@ -5,7 +5,7 @@
 @import url("../../../shared/styles/reset.css") layer(reset);
 
 html {
-  min-width: 20rem;
+  min-width: 22.5rem;
 
   font-family: var(--font-atkinson), system-ui, sans-serif;
   color: var(--color-text-primary);

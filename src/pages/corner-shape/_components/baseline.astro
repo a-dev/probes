@@ -1,3 +1,7 @@
+---
+import Credits from "./credits.astro";
+---
+
 <script>
   import "baseline-status";
 
@@ -13,7 +17,7 @@
   }
 </script>
 
-<div class="root">
+<footer class="root">
   <div class="support-panel">
     <div class="support-panel-content">
       Browser support of&nbsp;<code class="code code-no-wrap">corner-shape</code
@@ -23,14 +27,16 @@
       Support data didn't load. Check the Web Platform Status dashboard.
     </baseline-status>
   </div>
-</div>
+  <Credits />
+</footer>
 
 <style>
   .root {
     isolation: isolate;
     position: relative;
-    padding-block: 6rem;
-    padding-inline: 2.4rem;
+    padding-block: 6rem 2rem;
+    max-width: 50rem;
+    margin-inline: auto;
   }
   .root:before {
     content: "";
@@ -69,7 +75,7 @@
   }
 
   .support-panel-content {
-    font-size: 1.7rem;
+    font-size: clamp(1.1rem, 4vw, 1.7rem);
     font-weight: 700;
     line-height: 1.24;
 

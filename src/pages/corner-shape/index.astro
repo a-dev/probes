@@ -1,11 +1,12 @@
 ---
+import "./_styles/index.css";
+
 import { Font } from "astro:assets";
 
 import Baseline from "./_components/baseline.astro";
 import Generator from "./_components/generator.astro";
 import Head from "./_components/head.astro";
 import SupportWarning from "./_components/support-warning.astro";
-import "./_styles/index.css";
 
 const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
 ---
@@ -20,6 +21,7 @@ const baseUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>CSS corner-shape generator | @a-dev/probes</title>
+    <meta name="description" content="Way to generate CSS corner shapes" />
     <script is:inline>
       document.documentElement.dataset.cornerShape = CSS.supports(
         "corner-shape: squircle",
