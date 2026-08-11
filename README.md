@@ -16,7 +16,8 @@ This repository is a collection of experiments and probes in web development, de
 
 ---
 
-- Site: [https://a-dev.github.io/probes/corner-shape/](https://a-dev.github.io/probes/corner-shape/)<br /><br />CSS `corner-shape` generator help you make your corners round, squircle, or concave. Two fallback options are provided for browsers that don't support the property yet.<br /><br />Code: [src/pages/corner-shape](./src/pages/corner-shape)
+- Site: [https://a-dev.github.io/probes/corner-shape/](https://a-dev.github.io/probes/corner-shape/)<br /><br />CSS `corner-shape` generator help you make your corners round, squircle, or concave. Two fallback options are provided for browsers that don't support the property yet. "Why" article [CSS corner-shape: add a squircle to your design today with the right fallback](https://dev.to/a-dev/css-corner-shape-add-a-squircle-to-your-design-today-with-the-right-fallback-3ne6)
+<br /><br />Code: [src/pages/corner-shape](./src/pages/corner-shape).
 
 ---
 
