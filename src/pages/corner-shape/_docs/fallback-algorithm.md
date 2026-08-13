@@ -113,6 +113,76 @@ r_fallback = r · √( (1 − Q(2^s)) / (1 − π/4) )
 
 The number the Chrome docs hand out for `superellipse(3)` at `1rem` is `0.5rem`. Area-match puts it at **`0.317rem`** — the published figure is roughly 1.6× too round.
 
+### The same ratio as one `calc()`
+
+The generator knows `s` when it runs, so it emits the ratio already multiplied out — `border-radius: 0.583rem` beats any expression that recomputes it. The closed form below is for the other case: **`s` as a live custom property**, set per component, swapped at a breakpoint, themed, or transitioned. Then the fallback tracks it with no JavaScript, and it composes with a `--radius` that is itself a `clamp()`.
+
+CSS has `pow()`, `exp()`, `log()` and `sqrt()` but no `Γ`, so the formula above cannot be transcribed directly. Transcribing Lanczos instead would work — it is only arithmetic — but it is around forty lines of nested division per gamma call, twice. The asymptotics give something far smaller.
+
+Expand `ln Q` for small `ε = 1/k`. With `lnΓ(1 + x) = −γx + Σ(−1)ⁿζ(n)xⁿ/n` the Euler–Mascheroni terms cancel between `2 lnΓ(1 + ε)` and `lnΓ(1 + 2ε)`, leaving `ln Q ≈ −ζ(2)ε² + 2ζ(3)ε³ − …`. So `1 − Q → (π²/6)ε²` and the whole ratio decays as a pure `C/k`:
+
+```
+C = π · √( 2 / (3(4 − π)) ) = 2.76858
+```
+
+Factor that out and what remains is a correction on `ε ∈ (0, 1]` whose series coefficients are `−0.728, +0.444, −0.227, +0.063` — alternating, each roughly `−0.5×` the last. That is a geometric series, and a geometric series **is** `1/(1 + x)`: a polynomial has to chase it term by term (a quartic gets to `0.045%`), a denominator absorbs the tail in two terms and does slightly better.
+
+```
+ratio(s) ≈ C·ε / (1 + a·ε + b·ε²),    ε = 2^(−s)
+```
+
+`a` and `b` are not fitted. Two anchors pin them exactly:
+
+- **`s = 1`** — round must fall back to itself, so `C/2 = 1 + a/2 + b/4`.
+- **`s = 0`** — bevel has the closed form `√(2/(4 − π))`, and `C / ratio(0) = √(π²/3) = π/√3`, the `(1 − π/4)` cancelling out.
+
+```
+a = 2C − 3 − π/√3   = 0.72337
+b = 2(π/√3 + 1 − C) = 0.09043
+```
+
+Three custom properties, one `pow()`, two constants:
+
+```css
+.card {
+  --radius: 1rem;
+  --s: 2;
+
+  /* area-match fallback ratio: C·ε / (1 + aε + bε²), ε = 2^-s */
+  --_e: pow(2, calc(-1 * var(--s)));
+  --_ratio: calc(2.76858 * var(--_e) / (1 + var(--_e) * (0.72337 + 0.09043 * var(--_e))));
+
+  border-radius: calc(var(--radius) * var(--_ratio));
+}
+
+@supports (corner-shape: squircle) {
+  .card {
+    border-radius: var(--radius);
+    corner-shape: superellipse(var(--s));
+  }
+}
+```
+
+Computed `border-top-left-radius` in Chromium 148 at `--radius: 16px`, against `fallbackRatio()`:
+
+| `s`        | `0`         | `0.5`       | `1`    | `1.5`       | `2`         | `2.5`       | `3`         | `4`         | `5`         |
+| ---------- | ----------- | ----------- | ------ | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| computed   | `24.4224px` | `20.1212px` | `16px` | `12.3605px` | `9.33365px` | `6.92555px` | `5.07143px` | `2.64793px` | `1.35357px` |
+| rel. error | **0**       | `-0.020%`   | **0**  | `0.027%`    | `0.046%`    | `0.052%`    | `0.049%`    | `0.034%`    | `0.019%`    |
+
+Worst case over `s ∈ [0, 8]` is **`0.052%`** — `0.013px` at `r = 16px`, `0.04px` at `r = 48px`, three orders of magnitude under a device pixel. `bevel` and `round` are exact, which is the property worth having: a card that sets `round` round-trips through the fallback unchanged. A cubic denominator (`+ 0.011ε³`) reaches `0.0065%` and buys nothing.
+
+Dropping to one coefficient, `C·ε / (1 + 0.79476ε)`, costs more than it looks: **`1.06%`** worst case is still only `0.26px` at `r = 16px`, but it puts `round` at `0.9906` instead of `1`, so the round-trip stops holding. The second coefficient is worth its four characters.
+
+Four things this tier does not do:
+
+- **Convex only.** `ε = 2^(−s)` passes `1` for `s < 0` and the fit leaves its domain — but §4 is the real reason: no radius approximates a scoop, so the honest move is to scope the expression to `s ≥ 0` rather than extend it. `square` (`s = ∞`) has to be written `0` by hand.
+- **`pow()` is Baseline September 2023** (Chrome 111, Safari 15.4, Firefox 118) — older than the `shape()` tier of §5 needs anyway, so every browser missing `corner-shape` has it. Anything older drops the declaration whole, which a plain `border-radius: var(--radius)` ahead of it covers for one line.
+- **Animating `s` needs `@property`.** An unregistered custom property does not interpolate; `@property --s { syntax: "<number>"; inherits: true; initial-value: 1 }` makes the whole chain transition, `pow()` included.
+- **Feature-detect `pow()` as a number.** It resolves to a `<number>`, not a length, so `CSS.supports('width', 'pow(2,3)px')` reports false. The working probe is `CSS.supports('width', 'calc(1px * pow(2, 3))')`.
+
+Clamping, at least, is free here in a way it is not for the generated paths: `border-radius` applies §6 itself.
+
 ## 4. Concave has no `border-radius` fallback
 
 For `s < 0` the curve bends inward and `border-radius` only bends outward. There is no radius that approximates a `scoop`. Not a worse one — none.
