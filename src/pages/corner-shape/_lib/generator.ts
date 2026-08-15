@@ -1,6 +1,3 @@
-// The render pipeline. Every input event re-serialises the form and repaints from the
-// result, so the DOM stays the single source of truth.
-
 import { highlightElement } from "@speed-highlight/core";
 
 import {
@@ -12,9 +9,11 @@ import {
   shapeValue,
   type Corner,
   type GeneratorState,
+  type Unit,
 } from "./emit";
 import {
   applyPreset,
+  convertRadius,
   form,
   limitRadii,
   markPresetTransition,
@@ -23,6 +22,7 @@ import {
   shapeRanges,
   syncField,
   syncPresetChecks,
+  type CardBox,
   type Values,
 } from "./form";
 
@@ -47,28 +47,31 @@ function perCorner<T>(make: (corner: Corner) => T): Record<Corner, T> {
   return Object.fromEntries(CORNERS.map((corner) => [corner, make(corner)])) as Record<Corner, T>;
 }
 
-function makeState(values: Values, width: number, height: number): GeneratorState {
+function unitOf(value = ""): Unit {
+  return value === "px" || value === "%" ? value : "rem";
+}
+
+function makeState(values: Values, box: CardBox): GeneratorState {
   const suffix = values.mode === "individual" ? null : "all";
   const shapes = perCorner((corner) => shapeNumber(values[`shape-${suffix ?? corner}`]));
   const radii = perCorner((corner) => Number(values[`radius-${suffix ?? corner}`]));
   return {
     selector: values.selector ?? "",
-    unit: values.unit === "px" ? "px" : "rem",
-    width,
-    height,
+    ...box,
     shapes,
     radii,
+    radiusUnits: perCorner((corner) => unitOf(values[`radius-${suffix ?? corner}-unit`])),
     fallbackRadii: perCorner((corner) => computedFallback(radii[corner], shapes[corner])),
     exact: values.exact === "on",
   };
 }
 
 // The card is sized by its frame, not in rem, so the clamp ceiling comes from the laid-out
-// box or nowhere.
-function cardSize(): { width: number; height: number } {
+// box or nowhere. The rem comes back with it: a px radius has no other way across.
+function cardSize(): CardBox {
   const rem = parseFloat(getComputedStyle(root).fontSize);
   const box = card.getBoundingClientRect();
-  return { width: box.width / rem, height: box.height / rem };
+  return { width: box.width / rem, height: box.height / rem, rem };
 }
 
 // Everything that decides how big the card is, applied before anything measures it.
@@ -83,13 +86,16 @@ function frameCard(values: Values): void {
 // a slider drag in a browser that can do `corner-shape` itself.
 function previewClip(state: GeneratorState): string | null {
   if (!previewIsSynthetic && !state.exact) return null;
-  return exactClipPath({ ...state, unit: "rem" });
+  return exactClipPath(state);
 }
 
 function paintPreview(state: GeneratorState, values: Values, clip: string | null): void {
   for (const corner of CORNERS) {
-    root.style.setProperty(`--r-${corner}`, `${state.radii[corner]}rem`);
-    root.style.setProperty(`--fb-r-${corner}`, `${state.fallbackRadii[corner]}rem`);
+    // Whatever the corner was typed in is what the preview gets: all three units mean the
+    // same to the browser drawing the card as they will to the one reading the output.
+    const unit = state.radiusUnits[corner];
+    root.style.setProperty(`--r-${corner}`, `${state.radii[corner]}${unit}`);
+    root.style.setProperty(`--fb-r-${corner}`, `${state.fallbackRadii[corner]}${unit}`);
     root.style.setProperty(`--shape-${corner}`, shapeValue(state.shapes[corner]));
   }
   root.style.setProperty("--preview-clip", clip ?? "none");
@@ -127,10 +133,10 @@ function paintOutput(state: GeneratorState): void {
 function render(): void {
   const values = readValues();
   frameCard(values);
-  const { width, height } = cardSize();
+  const box = cardSize();
   // Clamping rewrites the radius inputs, which makes the values read a moment ago stale.
-  const settled = limitRadii(width, height) ? readValues() : values;
-  const state = makeState(settled, width, height);
+  const settled = limitRadii(box) ? readValues() : values;
+  const state = makeState(settled, box);
 
   paintControls(settled);
   paintPreview(state, settled, previewClip(state));
@@ -153,6 +159,7 @@ form.addEventListener("input", (event) => {
   const target = event.target as HTMLInputElement;
   const fromToggle = target.matches("[data-preset-for]");
   if (fromToggle) applyPreset(target);
+  else if (target.matches("[data-unit-for]")) convertRadius(target);
   else syncField(target);
   markPresetTransition(fromToggle);
   scheduleRender();
@@ -161,7 +168,7 @@ form.addEventListener("input", (event) => {
 // Typing has stopped: a half-typed or out-of-range number snaps into shape.
 form.addEventListener("change", (event) => {
   const target = event.target as HTMLInputElement;
-  if (!target.matches("[data-preset-for]")) syncField(target, true);
+  if (!target.matches("[data-preset-for], [data-unit-for]")) syncField(target, true);
   scheduleRender();
 });
 

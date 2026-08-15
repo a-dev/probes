@@ -263,18 +263,28 @@ export function fitSuperellipse(s: number, tolerance = 0.0025): Cubic[] {
   return result.slice();
 }
 
+export function clampFactor(
+  horizontal: [number, number, number, number],
+  vertical: [number, number, number, number],
+  width: number,
+  height: number,
+): number {
+  const [horizontalTL, horizontalTR, horizontalBR, horizontalBL] = horizontal;
+  const [verticalTL, verticalTR, verticalBR, verticalBL] = vertical;
+  return Math.min(
+    1,
+    width / (horizontalTL + horizontalTR || 1),
+    height / (verticalTR + verticalBR || 1),
+    width / (horizontalBL + horizontalBR || 1),
+    height / (verticalTL + verticalBL || 1),
+  );
+}
+
 export function clampRadii(
   radii: [number, number, number, number],
   width: number,
   height: number,
 ): [number, number, number, number] {
-  const [topLeft, topRight, bottomRight, bottomLeft] = radii;
-  const factor = Math.min(
-    1,
-    width / (topLeft + topRight || 1),
-    height / (topRight + bottomRight || 1),
-    width / (bottomLeft + bottomRight || 1),
-    height / (topLeft + bottomLeft || 1),
-  );
+  const factor = clampFactor(radii, radii, width, height);
   return radii.map((radius) => radius * factor) as [number, number, number, number];
 }

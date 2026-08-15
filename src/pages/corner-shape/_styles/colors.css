@@ -78,7 +78,7 @@
   --color-card-start: var(--color-blue-energy-400);
   --color-card-end: var(--color-blue-energy-600);
   --color-dot: var(--color-sunflower-gold-300);
-  --color-outline-focus: color-mix(var(--color-sunflower-gold-600) 80%, transparent);
+  --color-outline-focus: color-mix(var(--color-sunflower-gold-600) 40%, transparent);
   --color-input-border: var(--color-almond-cream-100);
   --color-input-background: color-mix(var(--color-sunflower-gold-50) 90%, transparent);
   --color-form-label: color-mix(var(--color-sunflower-gold-900) 60%, transparent);

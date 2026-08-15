@@ -1,23 +1,21 @@
 ---
 import {
   DEFAULT_RADIUS,
+  DEFAULT_RADIUS_UNIT,
   DEFAULT_SHAPE,
   RADIUS_RANGE,
+  RADIUS_UNITS,
+  radiusStepFor,
   SHAPE_RANGE,
 } from "../_lib/controls";
 
 import PresetToggle from "./preset-toggle.astro";
 import SliderField from "./slider-field.astro";
 
-// The three fields describing one corner: a preset, the exponent behind it, and the radius
-// it bends through. The fallback radius is derived from those, never typed. Identical for
-// all four corners or one, so only the name suffix and the spoken labels change.
-interface Props {
-  /** `all`, or one of `tl` / `tr` / `br` / `bl`. */
-  target: string;
-  /** Spoken name of the corner, e.g. "Top left". Unused when target is `all`. */
+type Props = {
+  target: "all" | "tl" | "tr" | "br" | "bl";
   label?: string;
-}
+};
 
 const { target, label = "" } = Astro.props;
 
@@ -53,9 +51,10 @@ const radiusLabel = isAll ? "Radius" : `${label} radius`;
   label={radiusLabel}
   min={RADIUS_RANGE.min}
   max={RADIUS_RANGE.max}
-  step={RADIUS_RANGE.step}
+  step={radiusStepFor(DEFAULT_RADIUS_UNIT)}
   value={DEFAULT_RADIUS}
-  unit="rem"
+  units={RADIUS_UNITS}
+  unitValue={DEFAULT_RADIUS_UNIT}
 >
   Radius
 </SliderField>

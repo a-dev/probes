@@ -3,19 +3,13 @@ import { PRESETS } from "../_lib/controls";
 
 import Toggle from "./toggle.astro";
 
-// The named stops on the shape scale, as one six-position switch. Picking a stop writes its
-// number into the shape field, and the field writes back: a stop stays lit only while the
-// number matches, so dragging off `2` un-checks Squircle and the thumb hides.
-interface Props {
-  /** Radio group name — one group per shape field. */
+type Props = {
   name: string;
-  /** `data-bind` key of the shape field this group drives. */
   target: string;
   legend: string;
-  /** Value of the stop that starts lit. */
   value: string;
   class?: string;
-}
+};
 
 const { name, target, legend, value, class: className } = Astro.props;
 ---

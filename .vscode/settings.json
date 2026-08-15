@@ -18,7 +18,14 @@
     "source.sortPackageJson": "explicit",
     "source.fixAll.markdownlint": "explicit"
   },
-  "stylelint.validate": ["css"],
+  "stylelint.validate": [
+    "css"
+  ],
   "css.lint.emptyRules": "ignore",
+  "cssvar.ignore": [
+    "**/node_modules/**",
+    "dist/**",
+    ".astro/**"
+  ],
   "bun.test.enable": false
 }

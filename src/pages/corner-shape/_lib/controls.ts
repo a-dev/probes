@@ -1,12 +1,5 @@
-// Every control the generator draws, described once, so the markup stays a loop over data
-// instead of four hand-copied corners. Nothing here knows how a control is rendered —
-// only what it means and what numbers it accepts.
-
 import type { Corner } from "./emit";
 
-// The card is measured against the square frame it sits in, not in rem: `size` is the
-// fraction of that frame it fills, and `ratio` stretches it from a wide bar to a tall one
-// without ever letting it escape.
 export const DIMENSIONS = [
   {
     name: "size",
@@ -46,7 +39,6 @@ export const DIMENSIONS = [
   },
 ] as const;
 
-// The four corners, in the order `border-radius` writes them.
 export const CORNER_LABELS: { id: Corner; label: string }[] = [
   { id: "tl", label: "top-left" },
   { id: "tr", label: "top-right" },
@@ -68,8 +60,21 @@ export const PRESETS = [
 export const DEFAULT_SHAPE = "2";
 export const DEFAULT_RADIUS = "1";
 
-// Shape and radius take the same two ranges everywhere they appear.
+export const RADIUS_UNITS = [
+  { label: "px", value: "px" },
+  { label: "rem", value: "rem" },
+  { label: "%", value: "%" },
+];
+
+export const DEFAULT_RADIUS_UNIT = "rem";
+
+export const PERCENT_CEILING = 50;
+
+const RADIUS_STEPS: Record<string, number> = { px: 1, rem: 0.1, "%": 1 };
+
+export function radiusStepFor(unit: string): number {
+  return RADIUS_STEPS[unit] ?? 1;
+}
+
 export const SHAPE_RANGE = { min: -3, max: 5, step: 0.1 } as const;
-// A guess, for the server: the real ceiling is half the laid-out card's shorter side, and
-// `_lib/form.ts` rewrites it on every render, so this value survives about one frame.
-export const RADIUS_RANGE = { min: 0, max: 18, step: 0.01 } as const;
+export const RADIUS_RANGE = { min: 0, max: 18 } as const;

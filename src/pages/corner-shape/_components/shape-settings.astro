@@ -46,8 +46,6 @@ import Toggle from "./toggle.astro";
     position: relative;
   }
 
-  /* Same dotted texture as `.preview-wrapper`, as a band under the header. The height is
-     a whole number of 0.5rem tiles so the dots are never sliced mid-row. */
   .header:after {
     position: absolute;
     bottom: 0;
@@ -92,8 +90,6 @@ import Toggle from "./toggle.astro";
     display: grid;
   }
 
-  /* The rule that used to be the fieldset's border-top now lives beside the label: the
-     text takes what it needs and the dotted band runs out to the right edge. */
   .corner-group-legend {
     display: flex;
     gap: 0.8rem;

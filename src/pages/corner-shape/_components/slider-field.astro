@@ -1,23 +1,21 @@
 ---
-// One number, three inputs. The hidden input is the only one the form serialises; the
-// range is the fast way to reach a value and the text box the precise one, and
-// `_lib/form.ts` keeps the pair mirrored through `data-bind`.
-interface Props {
-  /** Form field name, also the `data-bind` key the two visible inputs sync through. */
+import Toggle from "./toggle.astro";
+
+// One number, three inputs. `_lib/form.ts` keeps the pair mirrored through `data-bind`.
+type Props = {
   name: string;
-  /** Spoken name of the control, used to build both aria labels. */
   label: string;
   min: number | string;
   max: number | string;
   step: number | string;
   value: number | string;
-  /** Appended to the value input's aria label, e.g. "rem". */
   unit?: string;
-  /** `text` accepts `infinity`, which a number input would reject. */
-  type?: "number" | "text";
+  type?: "number" | "text"; // `text` accepts `infinity`, which a number input would reject.
   ariaValueText?: string;
+  units?: { label: string; value: string }[];
+  unitValue?: string;
   class?: string;
-}
+};
 
 const {
   name,
@@ -29,6 +27,8 @@ const {
   unit,
   type = "number",
   ariaValueText,
+  units,
+  unitValue,
   class: className,
 } = Astro.props;
 
@@ -50,7 +50,7 @@ const isText = type === "text";
     aria-valuetext={ariaValueText}
   />
   <input
-    class="text-input rounded-xs"
+    class="text-input rounded-s"
     type={type}
     inputmode={isText ? "decimal" : undefined}
     min={isText ? undefined : min}
@@ -60,4 +60,22 @@ const isText = type === "text";
     data-bind={name}
     aria-label={unit ? `${label} value, ${unit}` : `${label} value`}
   />
+  {
+    units && (
+      <Toggle
+        class="unit-switch"
+        name={`${name}-unit`}
+        ariaLabel={`${label} unit`}
+        options={units}
+        value={unitValue}
+        unitFor={name}
+      />
+    )
+  }
 </fieldset>
+<style>
+  :global(.unit-switch .toggle-option) {
+    padding-inline: 0.6rem;
+    font-size: 0.8rem;
+  }
+</style>

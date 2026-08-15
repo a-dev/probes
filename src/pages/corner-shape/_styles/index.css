@@ -22,9 +22,7 @@ html {
   }
 }
 
-/* Everything below is shared across the page's components. A component's own stylesheet
-   holds only its layout; anything two of them would otherwise copy lives here, unlayered
-   rules in those files beating these by virtue of the cascade layer. */
+/* Everything below is shared across the page's components */
 @layer ui {
   *:focus-visible {
     outline: 2px solid var(--color-outline-focus);
@@ -76,7 +74,7 @@ html {
 
   .text-input {
     min-width: 0;
-    padding: 0.32rem 0.5rem;
+    padding: 0.22rem 0.62rem;
     border: 1px solid var(--color-input-border);
 
     font-size: 1rem;
@@ -88,7 +86,7 @@ html {
   /* A slider and its typed value, side by side under one label. */
   .control-pair {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 4.5rem;
+    grid-template-columns: minmax(0, 1fr) 5rem;
     gap: 0.3rem 0.5rem;
     align-items: center;
 
@@ -101,10 +99,10 @@ html {
     margin-bottom: -0.4rem;
   }
 
-  /* A hairline track and a ring for a thumb; the ring fills in while it is held. Only
-     Firefox ships a progress pseudo-element, so the played half of the track is a
-     background gradient instead, sized by `--progress` (0–1, set in `_lib/generator.ts`)
-     against the distance the thumb's centre actually travels. */
+  .control-pair:has(.unit-switch) {
+    grid-template-columns: minmax(0, 1fr) 5rem auto;
+  }
+
   .range-input {
     --track-height: 0.25rem;
     --thumb-size: 1.1rem;
@@ -173,8 +171,16 @@ html {
     margin-top: -1px;
   }
 
-  .text-input:focus-visible,
-  .range-input:focus-visible,
+  .text-input:focus-visible {
+    outline: 1px solid var(--color-outline-focus);
+    outline-offset: 1px;
+  }
+
+  .range-input:focus-visible {
+    outline: 2px dotted var(--color-outline-focus);
+    outline-offset: 6px;
+  }
+
   .button:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: 2px;

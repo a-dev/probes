@@ -4,11 +4,12 @@ import { emitCss, exactClipPath, type GeneratorState } from "./emit";
 
 const state: GeneratorState = {
   selector: ".card",
-  unit: "rem",
   width: 12,
   height: 12,
+  rem: 16,
   shapes: { tl: 2, tr: 2, br: 2, bl: 2 },
   radii: { tl: 1, tr: 1, br: 1, bl: 1 },
+  radiusUnits: { tl: "rem", tr: "rem", br: "rem", bl: "rem" },
   fallbackRadii: { tl: 0.583, tr: 0.583, br: 0.583, bl: 0.583 },
   exact: false,
 };
@@ -16,6 +17,15 @@ const state: GeneratorState = {
 const uniform = (s: number): GeneratorState => ({
   ...state,
   shapes: { tl: s, tr: s, br: s, bl: s },
+});
+
+// The same corners, written as a share of the box instead of a length.
+const percent = (overrides: Partial<GeneratorState> = {}): GeneratorState => ({
+  ...state,
+  radii: { tl: 10, tr: 10, br: 10, bl: 10 },
+  radiusUnits: { tl: "%", tr: "%", br: "%", bl: "%" },
+  fallbackRadii: { tl: 5.831, tr: 5.831, br: 5.831, bl: 5.831 },
+  ...overrides,
 });
 
 describe("clip path emission", () => {
@@ -47,11 +57,64 @@ describe("clip path emission", () => {
   });
 });
 
-describe("css emission", () => {
-  test("converts to px on request", () => {
-    expect(emitCss({ ...state, unit: "px" })).toContain("border-radius: 16px");
+describe("units", () => {
+  test("writes each corner in the unit it was typed in", () => {
+    // No conversion on the way out and no output-wide unit to answer to: the number is
+    // already in the unit beside it, and four corners may disagree.
+    const mixed = emitCss({
+      ...state,
+      radii: { tl: 16, tr: 1, br: 10, bl: 1 },
+      radiusUnits: { tl: "px", tr: "rem", br: "%", bl: "rem" },
+    });
+    // Three values, not four: the two 1rem corners are opposite each other, so the
+    // shorthand still collapses across a mixture of units.
+    expect(mixed).toContain("border-radius: 16px 1rem 10%;");
   });
 
+  test("measures a px corner against the card through the rem", () => {
+    // 192px is 12rem, the whole width, so with a 4rem corner beside it on the same side
+    // the pair is 16rem of a 12rem edge and both give up a quarter.
+    const clamped = emitCss({
+      ...state,
+      exact: true,
+      radii: { tl: 192, tr: 4, br: 0, bl: 0 },
+      radiusUnits: { tl: "px", tr: "rem", br: "rem", bl: "rem" },
+    });
+    expect(clamped).toContain("border-radius: 144px 3rem 0 0");
+  });
+});
+
+describe("percentage radii", () => {
+  test("writes the same percentage on both axes", () => {
+    // 10% of the width horizontally and 10% of the height vertically is exactly what
+    // border-radius does with one number, and it is why a percentage corner turns
+    // elliptical on a card that is not square. Nothing is converted to reach that.
+    const path = exactClipPath({ ...percent(), exact: true })!;
+    expect(path.startsWith("shape(")).toBe(true);
+    expect(path).not.toContain("rem");
+    expect(path).toContain("calc(100% - 10%)");
+  });
+
+  test("shrinks overlapping percentages the way the box would", () => {
+    // 60% + 60% on one side is 120% of it, so every corner comes back at 50%.
+    const css = emitCss({ ...percent({ radii: { tl: 60, tr: 60, br: 60, bl: 60 } }), exact: true });
+    expect(css).toContain("border-radius: 50%;\n  clip-path: shape(");
+  });
+
+  test("measures a mixed pair against the side they share", () => {
+    // 100% of a 12rem-wide card plus a 4rem corner is 16rem of a 12rem side, so both
+    // ends give up a quarter — each in its own unit.
+    const mixed = emitCss({
+      ...state,
+      exact: true,
+      radii: { tl: 100, tr: 4, br: 0, bl: 0 },
+      radiusUnits: { tl: "%", tr: "rem", br: "rem", bl: "rem" },
+    });
+    expect(mixed).toContain("border-radius: 75% 3rem 0 0");
+  });
+});
+
+describe("css emission", () => {
   test("says so when no radius can approximate the shape", () => {
     expect(emitCss(uniform(-1))).toContain("bends inward");
   });

@@ -1,11 +1,3 @@
----
-import Toggle from "./toggle.astro";
-
-// The take-away. The order is the point: the fallback declaration comes first so every
-// browser gets something, and the `@supports` block only reaches those that can honour the
-// real shape. `_lib/emit.ts` builds the text; this is the frame around it.
----
-
 <section class="output-section" aria-label="Generated CSS">
   <pre id="css-output" class="css-output" tabindex="0"></pre>
   <div class="output-controls">
@@ -25,12 +17,6 @@ import Toggle from "./toggle.astro";
       </button>
     </div>
     <div class="output-options">
-      {
-        /* Styled after moderncss.dev's pure-CSS checkbox: the native input keeps all of
-        its behaviour, `appearance: none` takes away only the paint, and a `::before`
-        clipped into a tick draws the checked state. Everything sizes in `em`, so the
-        box grows with the label's font-size and nothing needs to be re-measured. */
-      }
       <label class="exact-toggle">
         <input class="exact-toggle-input" type="checkbox" name="exact" />
         <span>Exact fallback</span>
@@ -44,16 +30,6 @@ import Toggle from "./toggle.astro";
           value=".card"
         />
       </label>
-      <Toggle
-        name="unit"
-        legend="Unit"
-        value="rem"
-        class="unit-toggle"
-        options={[
-          { label: "rem", value: "rem" },
-          { label: "px", value: "px" },
-        ]}
-      />
     </div>
   </div>
 </section>
@@ -115,7 +91,7 @@ import Toggle from "./toggle.astro";
       color 0.25s ease;
   }
 
-  /* Both labels share one grid cell; only one is visible at a time. */
+  /* Both labels share one grid cell, only one is visible at a time. */
   .copy-css-label {
     grid-area: 1 / 1;
     transition:
@@ -141,14 +117,6 @@ import Toggle from "./toggle.astro";
     opacity: 1;
   }
 
-  /* Both halves live in `toggle.astro`: the class rides in as a prop and lands on that
-     component's own fieldset, so neither carries this component's scope. */
-  :global(.unit-toggle .toggle-option) {
-    padding-inline: 0.8rem;
-  }
-
-  /* `1em auto` is the whole layout: the box occupies exactly one em-width column, the
-     label takes the rest, and both stay on the text baseline as the font-size changes. */
   .exact-toggle {
     cursor: pointer;
 
@@ -251,7 +219,6 @@ import Toggle from "./toggle.astro";
     );
   }
 
-  /* Speed-highlight's own class names, mapped onto the page palette. */
   .css-output :global(.shj-numbers) {
     display: none;
   }
