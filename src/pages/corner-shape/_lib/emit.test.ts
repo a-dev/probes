@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
-import { emitCss, exactClipPath, type GeneratorState } from "./emit";
+import { declarationValues, emitCss, exactClipPath, type GeneratorState } from "./emit";
+import { clampFactor } from "./superellipse";
 
 const state: GeneratorState = {
   selector: ".card",
@@ -8,9 +9,15 @@ const state: GeneratorState = {
   height: 12,
   rem: 16,
   shapes: { tl: 2, tr: 2, br: 2, bl: 2 },
-  radii: { tl: 1, tr: 1, br: 1, bl: 1 },
+  radii: {
+    x: { tl: 1, tr: 1, br: 1, bl: 1 },
+    y: { tl: 1, tr: 1, br: 1, bl: 1 },
+  },
   radiusUnits: { tl: "rem", tr: "rem", br: "rem", bl: "rem" },
-  fallbackRadii: { tl: 0.583, tr: 0.583, br: 0.583, bl: 0.583 },
+  fallbackRadii: {
+    x: { tl: 0.583, tr: 0.583, br: 0.583, bl: 0.583 },
+    y: { tl: 0.583, tr: 0.583, br: 0.583, bl: 0.583 },
+  },
   exact: false,
 };
 
@@ -22,9 +29,15 @@ const uniform = (s: number): GeneratorState => ({
 // The same corners, written as a share of the box instead of a length.
 const percent = (overrides: Partial<GeneratorState> = {}): GeneratorState => ({
   ...state,
-  radii: { tl: 10, tr: 10, br: 10, bl: 10 },
+  radii: {
+    x: { tl: 10, tr: 10, br: 10, bl: 10 },
+    y: { tl: 10, tr: 10, br: 10, bl: 10 },
+  },
   radiusUnits: { tl: "%", tr: "%", br: "%", bl: "%" },
-  fallbackRadii: { tl: 5.831, tr: 5.831, br: 5.831, bl: 5.831 },
+  fallbackRadii: {
+    x: { tl: 5.831, tr: 5.831, br: 5.831, bl: 5.831 },
+    y: { tl: 5.831, tr: 5.831, br: 5.831, bl: 5.831 },
+  },
   ...overrides,
 });
 
@@ -63,7 +76,10 @@ describe("units", () => {
     // already in the unit beside it, and four corners may disagree.
     const mixed = emitCss({
       ...state,
-      radii: { tl: 16, tr: 1, br: 10, bl: 1 },
+      radii: {
+        x: { tl: 16, tr: 1, br: 10, bl: 1 },
+        y: { tl: 16, tr: 1, br: 10, bl: 1 },
+      },
       radiusUnits: { tl: "px", tr: "rem", br: "%", bl: "rem" },
     });
     // Three values, not four: the two 1rem corners are opposite each other, so the
@@ -77,7 +93,10 @@ describe("units", () => {
     const clamped = emitCss({
       ...state,
       exact: true,
-      radii: { tl: 192, tr: 4, br: 0, bl: 0 },
+      radii: {
+        x: { tl: 192, tr: 4, br: 0, bl: 0 },
+        y: { tl: 192, tr: 4, br: 0, bl: 0 },
+      },
       radiusUnits: { tl: "px", tr: "rem", br: "rem", bl: "rem" },
     });
     expect(clamped).toContain("border-radius: 144px 3rem 0 0");
@@ -97,7 +116,15 @@ describe("percentage radii", () => {
 
   test("shrinks overlapping percentages the way the box would", () => {
     // 60% + 60% on one side is 120% of it, so every corner comes back at 50%.
-    const css = emitCss({ ...percent({ radii: { tl: 60, tr: 60, br: 60, bl: 60 } }), exact: true });
+    const css = emitCss({
+      ...percent({
+        radii: {
+          x: { tl: 60, tr: 60, br: 60, bl: 60 },
+          y: { tl: 60, tr: 60, br: 60, bl: 60 },
+        },
+      }),
+      exact: true,
+    });
     expect(css).toContain("border-radius: 50%;\n  clip-path: shape(");
   });
 
@@ -107,7 +134,10 @@ describe("percentage radii", () => {
     const mixed = emitCss({
       ...state,
       exact: true,
-      radii: { tl: 100, tr: 4, br: 0, bl: 0 },
+      radii: {
+        x: { tl: 100, tr: 4, br: 0, bl: 0 },
+        y: { tl: 100, tr: 4, br: 0, bl: 0 },
+      },
       radiusUnits: { tl: "%", tr: "rem", br: "rem", bl: "rem" },
     });
     expect(mixed).toContain("border-radius: 75% 3rem 0 0");
@@ -153,5 +183,70 @@ describe("css emission", () => {
     expect(emitCss({ ...state, shapes: { ...state.shapes, tr: 0 } })).toContain(
       "corner-shape: squircle bevel squircle squircle;",
     );
+  });
+});
+
+describe("elliptical radii", () => {
+  test("omits the slash only while both axes match", () => {
+    expect(declarationValues(state).radius).toBe("1rem");
+    expect(
+      declarationValues({
+        ...state,
+        radii: { ...state.radii, y: { ...state.radii.y, tr: 2 } },
+      }).radius,
+    ).toBe("1rem / 1rem 2rem 1rem 1rem");
+  });
+
+  test("collapses one horizontal radius and four vertical radii", () => {
+    expect(
+      declarationValues({
+        ...state,
+        radii: {
+          x: { tl: 1, tr: 1, br: 1, bl: 1 },
+          y: { tl: 2, tr: 0, br: 0, bl: 0 },
+        },
+      }).radius,
+    ).toBe("1rem / 2rem 0 0");
+  });
+
+  test("scales a top-right point by its screen axis", () => {
+    const path = exactClipPath({
+      ...state,
+      shapes: { ...state.shapes, tr: -1 },
+      radii: {
+        x: { tl: 0, tr: 4, br: 0, bl: 0 },
+        y: { tl: 0, tr: 2, br: 0, bl: 0 },
+      },
+    })!;
+    expect(path).toContain("curve to 100% 2rem with calc(100% - 4rem) 2rem");
+  });
+
+  test("clamps genuinely different horizontal and vertical radii", () => {
+    expect(clampFactor([8, 8, 0, 0], [1, 9, 9, 1], 12, 12)).toBe(2 / 3);
+  });
+
+  // The two tiers that write a radius without going through `declarationValues`, and so
+  // could pair the axes the wrong way round on their own.
+  test("splits the axes of the area-matched fallback radius", () => {
+    const css = emitCss({
+      ...state,
+      fallbackRadii: {
+        x: { tl: 0.583, tr: 0.583, br: 0.583, bl: 0.583 },
+        y: { tl: 1.166, tr: 0.583, br: 0.583, bl: 0.583 },
+      },
+    });
+    expect(css).toContain("border-radius: 0.583rem / 1.166rem 0.583rem 0.583rem;");
+  });
+
+  test("splits the axes of the border hiding under an exact clip path", () => {
+    const css = emitCss({
+      ...state,
+      exact: true,
+      radii: {
+        x: { tl: 4, tr: 1, br: 1, bl: 1 },
+        y: { tl: 2, tr: 1, br: 1, bl: 1 },
+      },
+    });
+    expect(css).toContain("border-radius: 4rem 1rem 1rem / 2rem 1rem 1rem;\n  clip-path: shape(");
   });
 });

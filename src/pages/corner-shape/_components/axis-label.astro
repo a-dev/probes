@@ -1,0 +1,24 @@
+---
+// A field label and the arrow naming the axis it drives. The arrow is its own element
+// because it is conditional at runtime and the words are not: circular mode has one number
+// for both axes, so there is no axis to point at, and CSS drops the glyph on the mode flip.
+type Props = {
+  text: string;
+  glyph?: string;
+};
+
+const { text, glyph } = Astro.props;
+---
+
+<div class="root">{text}{glyph && <span class="axis-glyph">{glyph}</span>}</div>
+
+<style>
+  .root {
+    display: flex;
+    align-items: center;
+  }
+
+  .axis-glyph {
+    margin-inline-start: 0.35em;
+  }
+</style>

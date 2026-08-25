@@ -2,7 +2,7 @@
 // keeping a field's slider, number box, and committed value in step. Nothing here knows
 // what a shape or a radius means.
 
-import { PERCENT_CEILING, radiusStepFor } from "./controls";
+import { CEILING_FRACTION, DEFAULT_AXES, radiusStepFor } from "./controls";
 
 export type Values = Record<string, string>;
 
@@ -33,28 +33,45 @@ export const shapeRanges = all(".shape-control .range-input");
 // A radius and the switch deciding what its number means. `unit` is what the number is
 // written in *now* — the switch itself cannot say, since by the time a press is heard the
 // option that was checked has already lost the flag, and converting needs both ends.
-type RadiusField = { field: Field; units: HTMLInputElement[]; unit: string };
+type Axis = "x" | "y";
+type RadiusField = { x: Field; y: Field; units: HTMLInputElement[]; unit: string };
 
-const radiusFields: RadiusField[] = [...fields].flatMap(([name, field]) => {
-  if (!name.startsWith("radius-")) return [];
+const radiusFields: RadiusField[] = [...fields].flatMap(([name, x]) => {
+  if (!name.startsWith("radius-") || !name.endsWith("-x")) return [];
+  const y = fields.get(`${name.slice(0, -1)}y`);
+  if (!y) return [];
   const units = all(`[data-unit-for="${name}"]`);
-  return [{ field, units, unit: units.find((unit) => unit.checked)?.value ?? "rem" }];
+  return [{ x, y, units, unit: units.find((unit) => unit.checked)?.value ?? "rem" }];
 });
 
 // The card as last measured, in rem, with the rem itself. A unit switch converts against
 // this rather than forcing its own layout — the numbers were read a frame ago at most.
 let card: CardBox = { width: 0, height: 0, rem: 16 };
+let axisMode = DEFAULT_AXES;
 
-/** Half the card's shorter side, in rem: the length past which a corner stops bending. */
-function halfShorterSide(): number {
-  return Math.min(card.width, card.height) / 2;
+// Read off the radios rather than out of a `FormData`: this runs on every `input`, and
+// serialising the whole form to learn one of two words is the expensive way to ask.
+const axisInputs = all('input[name="axes"]');
+
+function readAxisMode(): void {
+  axisMode = axisInputs.find((input) => input.checked)?.value ?? DEFAULT_AXES;
 }
 
-// The same ceiling said three ways. A percentage says it about each side separately, so
-// there it is a constant.
-function ceilingFor({ unit }: RadiusField): number {
-  if (unit === "%") return PERCENT_CEILING;
-  return unit === "px" ? halfShorterSide() * card.rem : halfShorterSide();
+// The side a radius is measured against, in rem. One number driving both axes can only be
+// held to the shorter one; split axes each get their own.
+function sideFor(axis: Axis): number {
+  return axisMode === "elliptical"
+    ? card[axis === "x" ? "width" : "height"]
+    : Math.min(card.width, card.height);
+}
+
+// The same ceiling said three ways: a fraction of that side, in whichever unit the switch
+// is on. A percentage is already a fraction of it, so there the fraction *is* the ceiling.
+function ceilingFor({ unit }: RadiusField, axis: Axis): number {
+  const fraction = CEILING_FRACTION[axisMode] ?? CEILING_FRACTION.circular;
+  if (unit === "%") return fraction * 100;
+  const ceiling = sideFor(axis) * fraction;
+  return unit === "px" ? ceiling * card.rem : ceiling;
 }
 
 const presets = all("[data-preset-for]").map((input) => ({
@@ -145,14 +162,14 @@ function snap(value: number, step: number, round: (n: number) => number = Math.r
 
 // Re-hang one radius's inputs on the ceiling and the step its unit gives them, shrinking a
 // value that no longer fits under the ceiling. Returns whether it had to.
-function retune(radius: RadiusField): boolean {
-  const { field } = radius;
-  const max = ceilingFor(radius);
+function retune(radius: RadiusField, axis: Axis): boolean {
+  const field = radius[axis];
+  const max = ceilingFor(radius, axis);
   const maxAttribute = max.toFixed(2);
   const step = radiusStepFor(radius.unit);
   const stepAttribute = String(step);
 
-  // A ceiling is wherever the card's shorter side falls, so it almost never sits on a step.
+  // A ceiling comes from a laid-out side, so it almost never sits on a step.
   // A shrunk field lands on the last whole step under it instead: a slider silently rounds
   // anything off-step, and would otherwise part company with the number beside it.
   const fitted = String(snap(max, step, Math.floor));
@@ -167,27 +184,42 @@ function retune(radius: RadiusField): boolean {
   return shrank;
 }
 
-// Re-hang the radius sliders on the laid-out card: past half its shorter side a radius has
-// nothing left to bend, and that ceiling belongs to the card, not the markup. Returns
-// whether a radius had to shrink, which makes the serialised form stale.
+// Re-hang the radius sliders on the laid-out card. The ceiling belongs to the card, not the
+// markup. Returns whether a radius had to shrink, which makes the serialised form stale.
 export function limitRadii(box: CardBox): boolean {
   card = box;
+  readAxisMode();
   let shrankAny = false;
-  for (const radius of radiusFields) shrankAny = retune(radius) || shrankAny;
+  for (const radius of radiusFields) {
+    for (const axis of ["x", "y"] as const) shrankAny = retune(radius, axis) || shrankAny;
+  }
   return shrankAny;
 }
 
-// rem is the unit the other two are measured through, so a swap is two steps rather than
-// six. Between px and rem this is exact; a percentage is read against the card's shorter
-// side, which is exact only where that is also the longer one, because a percentage
-// resolves against the width on one axis and the height on the other and one number cannot
-// hold both. The shorter side is the same one the ceiling and the clamp are measured from.
-function toRem(value: number, unit: string, side: number): number {
+// In circular mode one number drives both axes, so a committed `-x` writes its `-y` twin.
+// Every `input` on the page comes through here — a shape drag, the preview text — and in
+// the steady state the twin already agrees, so a corner that is already mirrored is left
+// alone rather than written over with what it holds.
+export function mirrorAxes(): void {
+  readAxisMode();
+  if (axisMode !== "circular") return;
+  for (const { x, y } of radiusFields) {
+    if (y.hidden.value === x.hidden.value) continue;
+    y.hidden.value = x.hidden.value;
+    for (const peer of y.peers) peer.value = x.hidden.value;
+  }
+}
+
+// Rem is the unit the other two are measured through. Elliptical percentages use their own
+// axis; circular percentages keep using the shorter side because one number drives both.
+function toRem(value: number, unit: string, axis: Axis): number {
+  const side = sideFor(axis);
   if (unit === "%") return (value / 100) * side;
   return unit === "px" ? value / card.rem : value;
 }
 
-function fromRem(value: number, unit: string, side: number): number {
+function fromRem(value: number, unit: string, axis: Axis): number {
+  const side = sideFor(axis);
   if (unit === "%") return (value / side) * 100;
   return unit === "px" ? value * card.rem : value;
 }
@@ -195,21 +227,22 @@ function fromRem(value: number, unit: string, side: number): number {
 /** Re-express a radius in the unit its switch just moved to, keeping the corner it drew. */
 export function convertRadius(unitInput: HTMLInputElement): void {
   const radius = radiusFields.find(({ units }) => units.includes(unitInput));
-  const side = halfShorterSide() * 2;
-  if (!radius || !side) return;
+  if (!radius || !sideFor("x") || !sideFor("y")) return;
 
-  const value = Number(radius.field.hidden.value);
-  const converted = fromRem(toRem(value, radius.unit, side), unitInput.value, side);
+  const converted = (["x", "y"] as const).map((axis) =>
+    fromRem(toRem(Number(radius[axis].hidden.value), radius.unit, axis), unitInput.value, axis),
+  );
   radius.unit = unitInput.value;
-  // The new unit brings its own step, and the conversion almost never lands on one — 25px is
-  // 1.5625rem — so the number is snapped to it here rather than left for the slider to round
-  // behind everyone's back.
-  radius.field.hidden.value = String(snap(converted, radiusStepFor(radius.unit)));
+  for (const [index, axis] of (["x", "y"] as const).entries()) {
+    const field = radius[axis];
+    // The new unit brings its own step, and the conversion almost never lands on one —
+    // 25px is 1.5625rem — so snap it before the slider silently rounds it.
+    field.hidden.value = String(snap(converted[index], radiusStepFor(radius.unit)));
 
-  // The ceiling moves with the unit and a range input silently clamps anything written
-  // past its `max`, so the inputs are re-hung before the number lands on them.
-  retune(radius);
-  for (const peer of radius.field.peers) peer.value = radius.field.hidden.value;
+    // Re-hang the inputs before writing a value past a newly smaller `max`.
+    retune(radius, axis);
+    for (const peer of field.peers) peer.value = field.hidden.value;
+  }
 }
 
 // The played half of a slider's track: no pseudo-element for it exists outside Firefox, so

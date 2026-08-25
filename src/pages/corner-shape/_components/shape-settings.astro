@@ -1,5 +1,5 @@
 ---
-import { CORNER_LABELS } from "../_lib/controls";
+import { AXIS_MODES, CORNER_LABELS, DEFAULT_AXES } from "../_lib/controls";
 import CardProperties from "./card-properties.astro";
 import CornerFields from "./corner-fields.astro";
 import Toggle from "./toggle.astro";
@@ -13,17 +13,27 @@ import Toggle from "./toggle.astro";
     <div class="eyebrow" id="controls-title">Controls</div>
     <CardProperties />
   </div>
-  <Toggle
-    class="mode-toggle"
-    name="mode"
-    legend="Corner shapes"
-    size="m"
-    value="all"
-    options={[
-      { label: "All", value: "all" },
-      { label: "Individual", value: "individual" },
-    ]}
-  />
+  <div class="mode-toggles">
+    <Toggle
+      class="mode-toggle"
+      name="mode"
+      legend="Corner shapes"
+      size="m"
+      value="all"
+      options={[
+        { label: "All", value: "all" },
+        { label: "Individual", value: "individual" },
+      ]}
+    />
+    <Toggle
+      class="mode-toggle"
+      name="axes"
+      legend="Corner radii"
+      size="m"
+      value={DEFAULT_AXES}
+      options={AXIS_MODES}
+    />
+  </div>
 
   <div class="corner-group all-controls">
     <CornerFields target="all" />
@@ -56,8 +66,15 @@ import Toggle from "./toggle.astro";
     background: var(--background-dots);
   }
 
-  :global(.mode-toggle) {
+  .mode-toggles {
+    display: flex;
+
+    gap: 1.8rem;
     margin-block: 1.6rem 1.8rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.mode-toggle) {
     background: var(--color-page-background);
   }
 

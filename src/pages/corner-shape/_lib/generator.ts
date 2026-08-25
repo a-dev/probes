@@ -6,6 +6,7 @@ import {
   declarationValues,
   emitCss,
   exactClipPath,
+  radiusShorthand,
   shapeValue,
   type Corner,
   type GeneratorState,
@@ -17,6 +18,7 @@ import {
   form,
   limitRadii,
   markPresetTransition,
+  mirrorAxes,
   paintRangeProgress,
   readValues,
   shapeRanges,
@@ -54,14 +56,17 @@ function unitOf(value = ""): Unit {
 function makeState(values: Values, box: CardBox): GeneratorState {
   const suffix = values.mode === "individual" ? null : "all";
   const shapes = perCorner((corner) => shapeNumber(values[`shape-${suffix ?? corner}`]));
-  const radii = perCorner((corner) => Number(values[`radius-${suffix ?? corner}`]));
+  const radii = {
+    x: perCorner((corner) => Number(values[`radius-${suffix ?? corner}-x`])),
+    y: perCorner((corner) => Number(values[`radius-${suffix ?? corner}-y`])),
+  };
   return {
     selector: values.selector ?? "",
     ...box,
     shapes,
     radii,
     radiusUnits: perCorner((corner) => unitOf(values[`radius-${suffix ?? corner}-unit`])),
-    fallbackRadii: perCorner((corner) => computedFallback(radii[corner], shapes[corner])),
+    fallbackRadii: computedFallback(radii, shapes),
     exact: values.exact === "on",
   };
 }
@@ -90,12 +95,15 @@ function previewClip(state: GeneratorState): string | null {
 }
 
 function paintPreview(state: GeneratorState, values: Values, clip: string | null): void {
+  root.style.setProperty(
+    "--radius",
+    radiusShorthand(state.radii.x, state.radii.y, state.radiusUnits),
+  );
+  root.style.setProperty(
+    "--fb-radius",
+    radiusShorthand(state.fallbackRadii.x, state.fallbackRadii.y, state.radiusUnits),
+  );
   for (const corner of CORNERS) {
-    // Whatever the corner was typed in is what the preview gets: all three units mean the
-    // same to the browser drawing the card as they will to the one reading the output.
-    const unit = state.radiusUnits[corner];
-    root.style.setProperty(`--r-${corner}`, `${state.radii[corner]}${unit}`);
-    root.style.setProperty(`--fb-r-${corner}`, `${state.fallbackRadii[corner]}${unit}`);
     root.style.setProperty(`--shape-${corner}`, shapeValue(state.shapes[corner]));
   }
   root.style.setProperty("--preview-clip", clip ?? "none");
@@ -114,6 +122,7 @@ function paintControls(values: Values): void {
   syncPresetChecks(values);
   paintRangeProgress();
   form.dataset.mode = values.mode === "individual" ? "individual" : "all";
+  form.dataset.axes = values.axes === "elliptical" ? "elliptical" : "circular";
 }
 
 let emitted = "";
@@ -161,6 +170,7 @@ form.addEventListener("input", (event) => {
   if (fromToggle) applyPreset(target);
   else if (target.matches("[data-unit-for]")) convertRadius(target);
   else syncField(target);
+  mirrorAxes();
   markPresetTransition(fromToggle);
   scheduleRender();
 });
@@ -169,6 +179,7 @@ form.addEventListener("input", (event) => {
 form.addEventListener("change", (event) => {
   const target = event.target as HTMLInputElement;
   if (!target.matches("[data-preset-for], [data-unit-for]")) syncField(target, true);
+  mirrorAxes();
   scheduleRender();
 });
 

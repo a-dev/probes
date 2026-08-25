@@ -67,7 +67,7 @@ import Toggle from "./toggle.astro";
     inline-size: calc(100% * var(--fill));
 
     padding: calc(var(--p) * var(--fill));
-    border-radius: var(--r-tl) var(--r-tr) var(--r-br) var(--r-bl);
+    border-radius: var(--radius);
 
     font-size: var(--fs);
     line-height: 1.35;
@@ -90,7 +90,7 @@ import Toggle from "./toggle.astro";
   }
 
   .stage[data-preview="fallback"] .preview-card {
-    border-radius: var(--fb-r-tl) var(--fb-r-tr) var(--fb-r-br) var(--fb-r-bl);
+    border-radius: var(--fb-radius);
     clip-path: none;
 
     corner-shape: round;

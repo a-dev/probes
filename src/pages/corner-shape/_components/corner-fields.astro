@@ -47,14 +47,22 @@ const radiusLabel = isAll ? "Radius" : `${label} radius`;
 </SliderField>
 
 <SliderField
-  name={`radius-${target}`}
-  label={radiusLabel}
+  name={`radius-${target}-x`}
+  label="Radius"
+  glyph="↔"
+  ariaLabel={`${radiusLabel} horizontal`}
+  groupLabel={radiusLabel}
+  secondAxis={{
+    name: `radius-${target}-y`,
+    label: "Radius",
+    glyph: "↕",
+    ariaLabel: `${radiusLabel} vertical`,
+  }}
   min={RADIUS_RANGE.min}
   max={RADIUS_RANGE.max}
   step={radiusStepFor(DEFAULT_RADIUS_UNIT)}
   value={DEFAULT_RADIUS}
   units={RADIUS_UNITS}
   unitValue={DEFAULT_RADIUS_UNIT}
->
-  Radius
-</SliderField>
+  unitName={`radius-${target}-unit`}
+/>

@@ -111,6 +111,8 @@ r_fallback = r · √( (1 − Q(2^s)) / (1 − π/4) )
 
 `s = 1` returns exactly `1.0` — a round corner falls back to itself, which is the test that matters. `square` falls back to a sharp corner. `bevel` needs a radius half again as large as the one you typed, which surprises people but is right: a bevel cuts far more corner than a round of the same radius.
 
+For an elliptical corner with axes `rₓ` and `rᵧ`, anisotropic scaling changes the removed area to `rₓrᵧ(1 − Q(k))`. The round fallback is an ellipse too. Applying the ratio above to both axes gives `rₓrᵧ · ratio² · (1 − π/4)`, which is the same area. The ratio is therefore axis-independent; the generator applies it to ↔ and ↕ separately.
+
 The number the Chrome docs hand out for `superellipse(3)` at `1rem` is `0.5rem`. Area-match puts it at **`0.317rem`** — the published figure is roughly 1.6× too round.
 
 ### The same ratio as one `calc()`
@@ -241,9 +243,8 @@ CSS scales radii down when two on an edge would overlap. Per CSS Backgrounds 3 �
 
 ## 7. Scope limits
 
-- **One radius per corner.** Elliptical corners (`border-radius: 20px / 10px`) stretch the superellipse and are not supported.
 - **Physical corners only.** Logical longhands are not emitted.
-- Fitted geometry is independent of box size, so output stays responsive: corner curves use absolute lengths, far edges use `calc(100% - r)`.
+- Fitted geometry is independent of box size, so output stays responsive: corner curves use their horizontal and vertical lengths, while far edges use `calc(100% - rₓ)` or `calc(100% - rᵧ)`.
 
 ## 8. What the tests assert
 

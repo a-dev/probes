@@ -60,6 +60,12 @@ export const PRESETS = [
 export const DEFAULT_SHAPE = "2";
 export const DEFAULT_RADIUS = "1";
 
+export const AXIS_MODES = [
+  { label: "Circular", value: "circular" },
+  { label: "Elliptical", value: "elliptical" },
+];
+export const DEFAULT_AXES = "circular";
+
 export const RADIUS_UNITS = [
   { label: "px", value: "px" },
   { label: "rem", value: "rem" },
@@ -68,7 +74,11 @@ export const RADIUS_UNITS = [
 
 export const DEFAULT_RADIUS_UNIT = "rem";
 
-export const PERCENT_CEILING = 50;
+// How much of its side one radius may take. A circular corner's single number drives both
+// axes, so past half a side the neighbours' overlap scales it straight back and nothing new
+// is drawn. An elliptical corner's axes are independent: a corner sweeping a whole side —
+// `border-radius: 100% 0 0 0 / 50% 0 0 0` — is a shape no half-side value can reach.
+export const CEILING_FRACTION: Record<string, number> = { circular: 0.5, elliptical: 1 };
 
 const RADIUS_STEPS: Record<string, number> = { px: 1, rem: 0.1, "%": 1 };
 

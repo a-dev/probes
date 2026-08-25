@@ -86,21 +86,54 @@ html {
   /* A slider and its typed value, side by side under one label. */
   .control-pair {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 5rem;
-    gap: 0.3rem 0.5rem;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem 0.5rem;
+    align-items: start;
 
     min-width: 0;
     padding: 0;
     border: 0;
   }
 
-  .control-pair .field-label {
-    margin-bottom: -0.4rem;
+  .control-axis {
+    display: grid;
+    grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) 5rem;
+    gap: 0.3rem 0.5rem;
+    align-items: center;
+
+    min-width: 0;
   }
 
   .control-pair:has(.unit-switch) {
-    grid-template-columns: minmax(0, 1fr) 5rem auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .control-pair .field-label {
+    grid-column: 1 / -1;
+    margin-bottom: -0.4rem;
+  }
+
+  .unit-switch {
+    grid-column: 2;
+    margin-block-start: 11px;
+  }
+
+  /* Both axis rows sit in column 1, which leaves auto-placement's cursor on the second of
+     them — a bare `span 2` would start the switch there and hang an empty third row off the
+     bottom. The span has to name row 1, and only while there is a second row to span. */
+  .generator-form[data-axes="elliptical"] .has-second-axis .unit-switch {
+    grid-row: 1 / span 2;
+  }
+
+  .generator-form[data-axes="circular"] .axis-y {
+    display: none;
+  }
+
+  /* One number drives both axes, so the label has no axis to point at — and the space
+     before the arrow goes with it. */
+  .generator-form[data-axes="circular"] .axis-glyph {
+    display: none;
   }
 
   .range-input {

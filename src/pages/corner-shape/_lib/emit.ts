@@ -3,6 +3,7 @@ import { clampFactor, fallbackRatio, fitSuperellipse, type Point } from "./super
 export const CORNERS = ["tl", "tr", "br", "bl"] as const;
 export type Corner = (typeof CORNERS)[number];
 export type CornerValues = Record<Corner, number>;
+export type RadiusValues = { x: CornerValues; y: CornerValues };
 
 export type Unit = "px" | "rem" | "%";
 
@@ -12,9 +13,9 @@ export type GeneratorState = {
   height: number;
   rem: number;
   shapes: CornerValues;
-  radii: CornerValues;
+  radii: RadiusValues;
   radiusUnits: Record<Corner, Unit>;
-  fallbackRadii: CornerValues;
+  fallbackRadii: RadiusValues;
   exact: boolean;
 };
 
@@ -31,8 +32,15 @@ export function shapeValue(s: number): string {
   return KEYWORDS.get(s) ?? `superellipse(${Number(s.toFixed(1))})`;
 }
 
-export function computedFallback(radius: number, s: number): number {
-  return s < 0 ? radius : radius * fallbackRatio(s);
+export function computedFallback(radii: RadiusValues, shapes: CornerValues): RadiusValues {
+  const axis = (values: CornerValues) =>
+    Object.fromEntries(
+      CORNERS.map((corner) => [
+        corner,
+        shapes[corner] < 0 ? values[corner] : values[corner] * fallbackRatio(shapes[corner]),
+      ]),
+    ) as CornerValues;
+  return { x: axis(radii.x), y: axis(radii.y) };
 }
 
 function decimal(value: number): string {
@@ -53,28 +61,49 @@ function shorthand(values: string[]): string {
   return values.join(" ");
 }
 
+export function radiusShorthand(
+  x: CornerValues,
+  y: CornerValues,
+  units: Record<Corner, Unit>,
+): string {
+  const group = (values: CornerValues) =>
+    shorthand(CORNERS.map((corner) => length(values[corner], units[corner])));
+  const horizontal = group(x);
+  const vertical = group(y);
+  return horizontal === vertical ? horizontal : `${horizontal} / ${vertical}`;
+}
+
 export function declarationValues(state: GeneratorState): { radius: string; shape: string } {
   return {
-    radius: shorthand(
-      CORNERS.map((corner) => length(state.radii[corner], state.radiusUnits[corner])),
-    ),
+    radius: radiusShorthand(state.radii.x, state.radii.y, state.radiusUnits),
     shape: shorthand(CORNERS.map((corner) => shapeValue(state.shapes[corner]))),
   };
 }
 
-// Percentages inside `polygon()` and `shape()` resolve exactly as they do in
-// `border-radius` — horizontally against the width, vertically against the height — so a
-// percentage corner needs no conversion here, only the same number written on both axes.
-function pointExpression(corner: Corner, point: Point, radius: number, unit: Unit): string {
-  const direct = (scale: number) => length(radius * scale, unit);
-  const far = (scale: number) => {
-    const offset = direct(scale);
+// Percentages need no conversion on the way out: inside `polygon()` and `shape()` they
+// resolve as they do in `border-radius`, against the width on one axis and the height on
+// the other, which is what the two radii already mean.
+//
+// The rotation each corner gets means its point components do not line up with the screen —
+// `tr` writes `far(point.y) direct(point.x)`. The axes do line up, though: the emitted pair
+// is always `<horizontal> <vertical>`, so the first slot scales by `rx` and the second by
+// `ry` whichever component feeds it. A wrong-axis scale still looks plausible, so
+// `emit.test.ts` pins the `tr` mapping.
+function pointExpression(corner: Corner, point: Point, rx: number, ry: number, unit: Unit): string {
+  const scaledBy = (radius: number) => (scale: number) => length(radius * scale, unit);
+  const away = (near: (scale: number) => string) => (scale: number) => {
+    const offset = near(scale);
     return offset === "0" ? "100%" : `calc(100% - ${offset})`;
   };
-  if (corner === "tl") return `${direct(point.x)} ${direct(point.y)}`;
-  if (corner === "tr") return `${far(point.y)} ${direct(point.x)}`;
-  if (corner === "br") return `${far(point.x)} ${far(point.y)}`;
-  return `${direct(point.y)} ${far(point.x)}`;
+  const h = scaledBy(rx);
+  const v = scaledBy(ry);
+  const farH = away(h);
+  const farV = away(v);
+
+  if (corner === "tl") return `${h(point.x)} ${v(point.y)}`;
+  if (corner === "tr") return `${farH(point.y)} ${v(point.x)}`;
+  if (corner === "br") return `${farH(point.x)} ${farV(point.y)}`;
+  return `${h(point.y)} ${farV(point.x)}`;
 }
 
 const A = { x: 0, y: 1 };
@@ -88,12 +117,14 @@ function endpoint(s: number, which: "a" | "b"): Point {
   return s === Infinity ? OUTER : which === "a" ? A : B;
 }
 
-function polygonPath(state: GeneratorState, radii: CornerValues): string {
+function polygonPath(state: GeneratorState, radii: RadiusValues): string {
   const points: string[] = [];
   for (const corner of CORNERS) {
     const s = state.shapes[corner];
     const add = (point: Point) =>
-      points.push(pointExpression(corner, point, radii[corner], state.radiusUnits[corner]));
+      points.push(
+        pointExpression(corner, point, radii.x[corner], radii.y[corner], state.radiusUnits[corner]),
+      );
     add(endpoint(s, "a"));
     if (s === -Infinity) add(INNER);
     if (s !== Infinity) add(B);
@@ -102,9 +133,9 @@ function polygonPath(state: GeneratorState, radii: CornerValues): string {
 }
 
 // The commands that turn one corner, entered on its edge and left on the next.
-function cornerCommands(state: GeneratorState, corner: Corner, radius: number): string[] {
+function cornerCommands(state: GeneratorState, corner: Corner, rx: number, ry: number): string[] {
   const s = state.shapes[corner];
-  const at = (point: Point) => pointExpression(corner, point, radius, state.radiusUnits[corner]);
+  const at = (point: Point) => pointExpression(corner, point, rx, ry, state.radiusUnits[corner]);
 
   if (s === Infinity) return [];
   if (s === 0) return [`line to ${at(B)}`];
@@ -116,20 +147,22 @@ function cornerCommands(state: GeneratorState, corner: Corner, radius: number): 
   );
 }
 
-function shapePath(state: GeneratorState, radii: CornerValues): string {
+function shapePath(state: GeneratorState, radii: RadiusValues): string {
   const start = pointExpression(
     "tl",
     endpoint(state.shapes.tl, "b"),
-    radii.tl,
+    radii.x.tl,
+    radii.y.tl,
     state.radiusUnits.tl,
   );
   const commands = [`from ${start}`];
   for (const corner of ["tr", "br", "bl", "tl"] as const) {
-    const radius = radii[corner];
+    const rx = radii.x[corner];
+    const ry = radii.y[corner];
     const unit = state.radiusUnits[corner];
     commands.push(
-      `line to ${pointExpression(corner, endpoint(state.shapes[corner], "a"), radius, unit)}`,
-      ...cornerCommands(state, corner, radius),
+      `line to ${pointExpression(corner, endpoint(state.shapes[corner], "a"), rx, ry, unit)}`,
+      ...cornerCommands(state, corner, rx, ry),
     );
   }
   commands.push("close");
@@ -141,18 +174,23 @@ function shapePath(state: GeneratorState, radii: CornerValues): string {
 // corners can be written in three units, so the overlap is measured in the one thing they
 // share — the card's own rem — and the shrink comes back as a single factor each radius
 // then takes in its own unit.
-function clippedRadii(state: GeneratorState): CornerValues {
-  const used = (side: number) =>
+function clippedRadii(state: GeneratorState): RadiusValues {
+  const used = (axis: keyof RadiusValues, side: number) =>
     CORNERS.map((corner) => {
-      const radius = state.radii[corner];
+      const radius = state.radii[axis][corner];
       if (state.radiusUnits[corner] === "%") return (radius / 100) * side;
       return state.radiusUnits[corner] === "px" ? radius / state.rem : radius;
     }) as [number, number, number, number];
 
-  const factor = clampFactor(used(state.width), used(state.height), state.width, state.height);
-  return Object.fromEntries(
-    CORNERS.map((corner) => [corner, state.radii[corner] * factor]),
-  ) as CornerValues;
+  const factor = clampFactor(
+    used("x", state.width),
+    used("y", state.height),
+    state.width,
+    state.height,
+  );
+  const scaled = (values: CornerValues) =>
+    Object.fromEntries(CORNERS.map((corner) => [corner, values[corner] * factor])) as CornerValues;
+  return { x: scaled(state.radii.x), y: scaled(state.radii.y) };
 }
 
 export function exactClipPath(state: GeneratorState): string | null {
@@ -168,8 +206,9 @@ export function exactClipPath(state: GeneratorState): string | null {
 }
 
 const CLIP_NOTE =
-  "/* a clip path cuts at the border box: a border, outline, or box-shadow on\n   this element will be cut */";
-const ROUNDED_CLIP_NOTE = CLIP_NOTE; // TODO: think to add the right note
+  "/* a clip path cuts at the border box, so a border, outline, or box-shadow\n   loses its corners to the cut */";
+const ROUNDED_CLIP_NOTE =
+  "/* the radius is for the border; the clip path still cuts an outline or box-shadow */";
 
 // A rounded border only hides under a corner at least as full as a circle — `k = 2^s ≥ 2`,
 // so `s ≥ 1`. `round` is the exact case, the two curves being the same one. Below it the
@@ -182,7 +221,7 @@ function radiusUnderClip(state: GeneratorState): string | null {
   });
   if (!hidden) return null;
   const radii = clippedRadii(state);
-  return shorthand(CORNERS.map((corner) => length(radii[corner], state.radiusUnits[corner])));
+  return radiusShorthand(radii.x, radii.y, state.radiusUnits);
 }
 
 function concaveNote(state: GeneratorState): string {
@@ -204,9 +243,7 @@ function fallbackTier(state: GeneratorState, selector: string, clipPath: string 
     const rounding = underClip ? `  border-radius: ${underClip};\n` : "";
     return `${note}\n${selector} {\n${rounding}  clip-path: ${clipPath};\n}`;
   }
-  const radius = shorthand(
-    CORNERS.map((corner) => length(state.fallbackRadii[corner], state.radiusUnits[corner])),
-  );
+  const radius = radiusShorthand(state.fallbackRadii.x, state.fallbackRadii.y, state.radiusUnits);
   return `${selector} {\n${concaveNote(state)}  border-radius: ${radius};\n}`;
 }
 

@@ -1,10 +1,15 @@
 ---
+import AxisLabel from "./axis-label.astro";
 import Toggle from "./toggle.astro";
 
-// One number, three inputs. `_lib/form.ts` keeps the pair mirrored through `data-bind`.
+type SecondAxis = { name: string; label: string; glyph?: string; ariaLabel: string };
+
+// One number, three inputs — or two of those rows when a corner carries a radius per axis.
+// `_lib/form.ts` keeps each row's trio in step through `data-bind`.
 type Props = {
   name: string;
   label: string;
+  glyph?: string; // The axis arrow, shown only while the field has an axis to name.
   min: number | string;
   max: number | string;
   step: number | string;
@@ -12,14 +17,19 @@ type Props = {
   unit?: string;
   type?: "number" | "text"; // `text` accepts `infinity`, which a number input would reject.
   ariaValueText?: string;
+  ariaLabel?: string;
+  groupLabel?: string;
+  secondAxis?: SecondAxis;
   units?: { label: string; value: string }[];
   unitValue?: string;
+  unitName?: string;
   class?: string;
 };
 
 const {
   name,
   label,
+  glyph,
   min,
   max,
   step,
@@ -27,45 +37,90 @@ const {
   unit,
   type = "number",
   ariaValueText,
+  ariaLabel = label,
+  // Names the fieldset and the unit switch, both of which cover every row: the axis words
+  // in `ariaLabel` would be a lie on a control that governs both.
+  groupLabel = ariaLabel,
+  secondAxis,
   units,
   unitValue,
+  unitName = `${name}-unit`,
   class: className,
 } = Astro.props;
 
-const isText = type === "text";
+// The ↕ row is the same three inputs over again. Only ↔ can be a text input or carry a
+// shape's value text; a second radius is always a plain number.
+const axes = [
+  { name, label, glyph, ariaLabel, type, ariaValueText, unit, class: "axis-x" },
+  ...(secondAxis
+    ? [
+        {
+          name: secondAxis.name,
+          label: secondAxis.label,
+          glyph: secondAxis.glyph,
+          ariaLabel: secondAxis.ariaLabel,
+          type: "number" as const,
+          ariaValueText: undefined,
+          unit: undefined,
+          class: "axis-y",
+        },
+      ]
+    : []),
+];
 ---
 
-<fieldset class:list={["control-pair", className]}>
-  <legend class="field-label"><slot>{label}</slot></legend>
-  <input type="hidden" name={name} value={value} data-value-for={name} />
-  <input
-    class="range-input rounded-xs"
-    type="range"
-    min={min}
-    max={max}
-    step={step}
-    value={value}
-    data-bind={name}
-    aria-label={`${label} slider`}
-    aria-valuetext={ariaValueText}
-  />
-  <input
-    class="text-input rounded-s"
-    type={type}
-    inputmode={isText ? "decimal" : undefined}
-    min={isText ? undefined : min}
-    max={isText ? undefined : max}
-    step={isText ? undefined : step}
-    value={value}
-    data-bind={name}
-    aria-label={unit ? `${label} value, ${unit}` : `${label} value`}
-  />
+<fieldset
+  class:list={["control-pair", { "has-second-axis": secondAxis }, className]}
+  aria-label={groupLabel}
+>
+  {
+    axes.map((axis, index) => {
+      const isText = axis.type === "text";
+      return (
+        <div class:list={["control-axis", axis.class]}>
+          <label class="field-label" for={`${axis.name}-range`}>
+            {index === 0 ? (
+              <slot>
+                <AxisLabel text={axis.label} glyph={axis.glyph} />
+              </slot>
+            ) : (
+              <AxisLabel text={axis.label} glyph={axis.glyph} />
+            )}
+          </label>
+          <input type="hidden" name={axis.name} value={value} data-value-for={axis.name} />
+          <input
+            id={`${axis.name}-range`}
+            class="range-input rounded-xs"
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            data-bind={axis.name}
+            aria-label={`${axis.ariaLabel} slider`}
+            aria-valuetext={axis.ariaValueText}
+          />
+          <input
+            class="text-input rounded-s"
+            type={axis.type}
+            inputmode={isText ? "decimal" : undefined}
+            min={isText ? undefined : min}
+            max={isText ? undefined : max}
+            step={isText ? undefined : step}
+            value={value}
+            data-bind={axis.name}
+            aria-label={axis.unit ? `${axis.ariaLabel} value, ${axis.unit}` : `${axis.ariaLabel} value`}
+          />
+        </div>
+      );
+    })
+  }
   {
     units && (
       <Toggle
         class="unit-switch"
-        name={`${name}-unit`}
-        ariaLabel={`${label} unit`}
+        name={unitName}
+        ariaLabel={`${groupLabel} unit`}
         options={units}
         value={unitValue}
         unitFor={name}
